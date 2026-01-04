@@ -1,9 +1,0 @@
-message,label
-"Your bank account will be blocked. Click link to verify","Dangerous"
-"Contact support@bank-help.in immediately","Dangerous"
-"Call 9876543210 now to unblock account","Dangerous"
-"You won 5000 INR! Visit http://wincash.in","Dangerous"
-"I will call you tomorrow","Safe"
-"Hey, let's meet at 5 PM","Safe"
-"Your parcel could not be delivered. Update details","Suspicious"
-"Congratulations! You are selected for part-time job","Suspicious"

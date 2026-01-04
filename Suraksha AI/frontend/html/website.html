@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suraksha.AI | Advanced Cybersecurity</title>
+<style>
+:root {
+    --primary: #070b0d;
+    --bg-dark: #020617;
+    --card-bg: #0f172a;
+    --text-main: #f8fafc;
+    --text-dim: #94a3b8;
+    --accent: #22d3ee;
+}
+
+body { 
+    font-family: 'Inter', 'Segoe UI', sans-serif; 
+    color: var(--text-main); 
+    background: linear-gradient(rgb(3, 8, 18), rgba(3,8,18,20));
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 40px;
+    background: rgba(2, 6, 23, 1);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    z-index: 1000;
+}
+
+.logo { 
+    font-size: 1.4rem; 
+    font-weight: 800; 
+    letter-spacing: 1px;
+    color: var(--accent);
+    display: flex; align-items: center; gap: 10px;
+}
+
+nav { display: flex; gap: 30px; }
+nav a { color:#94a3b8; font-size: 0.9rem; font-weight: 500; transition: 0.3s; }
+nav a:hover { color: var(--accent); }
+
+.nav-actions { display: flex; align-items: center; gap: 20px; }
+
+.user-widget {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+    transition: 0.3s;
+}
+.user-widget img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 40px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.1);
+    padding: 20px;
+    width: 220px;
+    display: none;
+    text-align: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.profile-dropdown.show { display: block; opacity: 1; }
+.profile-dropdown .profile-img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; }
+.profile-dropdown p { color: var(--text-main); margin-bottom: 15px; font-size: 0.9rem; word-wrap: break-word; }
+.btn-logout { 
+    background: transparent; 
+    color: #ef4444; 
+    border: 1px solid #ef4444; 
+    padding: 6px 14px; 
+    border-radius: 6px; 
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: 0.3s;
+}
+.btn-logout:hover { background: #ef4444; color: white; }
+
+.hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 20px;
+    background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+}
+.hero h1 { font-size: 4rem; font-weight: 800; margin-bottom: 20px; line-height: 1.1; }
+.hero h1 span { background: linear-gradient(to right, #0ea5e9, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--text-dim); font-size: 1.2rem; max-width: 600px; margin-bottom: 40px; }
+.btn-primary { 
+    background: var(--primary); 
+    color: white; 
+    padding: 14px 30px; 
+    border-radius: 8px; 
+    font-weight: 600;
+    transition: 0.3s;
+    box-shadow: 0 4px 14px rgba(14,165,233,0.4);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(14,165,233,0.6); }
+
+section { padding: 100px 5%; max-width: 1300px; margin: auto; position: relative; }
+.section-header { text-align: center; margin-bottom: 60px; }
+.section-header h2 { font-size: 2.5rem; margin-bottom: 10px; }
+.section-header p { color: var(--text-dim); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+a.tool-link { text-decoration: none; color: inherit; }
+.tool-card {
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    text-align: center;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.8s ease, opacity 0.8s ease;
+}
+.tool-card.visible { transform: scale(1) translateY(0); opacity: 1; }
+
+.services-container {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.service-box {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 40px 30px;
+    width: 300px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.05);
+    cursor: default;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.8s ease, opacity 0.8s ease;
+}
+.service-box.visible { transform: scale(1) translateY(0); opacity: 1; }
+
+.contact-container {
+    max-width: 600px;
+    margin: auto;
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 20px;
+}
+.contact-container input, .contact-container textarea {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: white;
+}
+.btn-submit { width: 100%; padding: 15px; background: var(--primary); border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+footer { text-align: center; padding: 50px; color: var(--text-dim); border-top: 1px solid rgba(255,255,255,0.05); }
+
+@media (max-width: 768px) {
+    header { padding: 15px 20px; }
+    nav { display: none; }
+    .hero h1 { font-size: 2.5rem; }
+    .services-container { flex-direction: column; align-items: center; }
+}
+
+html { scroll-behavior: smooth; overflow-y: auto; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #020617; }
+::-webkit-scrollbar-thumb { background: linear-gradiaent(180deg, #0ea5e9, #22d3ee); border-radius: 10px; }
+
+#heroTitle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+}
+
+.hero-line {
+    display: block;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: transform 0.8s ease, opacity 0.8s ease;
+}
+
+.hero-line.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.main-title {
+    font-size: clamp(2.8rem, 6vw, 4rem);
+    font-weight: 800;
+}
+
+.sub-title {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #0ea5e9, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+
+
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo">🛡 SURAKSHA.AI</div>
+    <nav>
+        <a href="#analyzer">Intelligence</a>
+        <a href="#difference">Why It Matters</a>
+        <a href="#services">Services</a>
+        <a href="#contact">Support</a>
+        <a href="documentation.html">Documentation</a>
+        <a href="About Us.html">About Us</a>
+    </nav>
+    <div class="nav-actions">
+        <div class="user-widget" id="profileIcon">
+            <img src="../assets/profile-placeholder.png" alt="Profile">
+        </div>
+        <div class="profile-dropdown" id="profileDropdown">
+            <img src="../assets/profile-placeholder.png" class="profile-img" id="profileImage">
+            <p id="profileEmail">user@example.com</p>
+            <button class="btn-logout" id="dropdownLogoutBtn">Logout</button>
+        </div>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+ <h1 id="heroTitle">
+  <span class="hero-line main-title">Suraksha.AI</span>
+  <span class="hero-line sub-title">Cybersecurity That Explains Itself</span>
+</h1>
+
+
+        AI-powered phishing detection, malware scanning, and vault intelligence —  
+        with clear explanations, not black-box decisions.
+    </p>
+    <p style="margin-top:10px; font-size:0.95rem; color:#647687;">
+        Built to protect users, students, and organizations from invisible digital threats.
+    </p>
+</section>
+
+<!-- WHY WE ARE DIFFERENT -->
+<section id="difference" class="section-difference">
+    <div class="section-header">
+        <h2>Why Suraksha.AI Stands Out</h2>
+        <p>Not just detection — we explain, educate, and empower every user.</p>
+    </div>
+    <div class="services-container">
+        <div class="service-box">🧠
+            <h3>Explainable AI</h3>
+            <p>Every alert comes with a clear explanation, so users understand the threat, not just the warning.</p>
+        </div>
+        <div class="service-box">🔍
+            <h3>Proactive Defense</h3>
+            <p>We identify vulnerabilities before attackers do, reducing risk and building trust.</p>
+        </div>
+        <div class="service-box">🎓
+            <h3>Learn While Protected</h3>
+            <p>Students and users gain awareness from our AI insights, making security education practical and interactive.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Security Intelligence -->
+<section id="analyzer" class="section-analyzer scroll-reveal">
+    <div class="section-header">
+        <h2>Security Intelligence Tools</h2>
+        <p>Tools that don’t just detect threats — they show you exactly what’s happening and how to fix it.</p>
+    </div>
+    <div class="grid analyzer-grid">
+        <a href="PhisingDetector.html" class="tool-link">
+            <div class="tool-card">🔍<h3>Phishing Detector</h3><p>Heuristic analysis of URLs and email metadata to prevent credential theft.</p></div>
+        </a>
+        <a href="Malwarescanner.html" class="tool-link">
+            <div class="tool-card">🛡️<h3>Malware Scanner</h3><p>Deep packet inspection and file entropy analysis to block malicious payloads.</p></div>
+        </a>
+        <a href="VaultAnalysis.html" class="tool-link">
+            <div class="tool-card">🔑<h3>Vault Analysis</h3><p>Evaluate credential strength and cross-reference leaked database breaches.</p></div>
+        </a>
+    </div>
+</section>
+
+<!-- Services -->
+<section id="services" class="section-services scroll-reveal">
+    <div class="section-header">
+        <h2>Our Services</h2>
+        <p>Enterprise-grade protection powered by AI</p>
+    </div>
+    <div class="services-container">
+        <div class="service-box">⚙️<h3>Real-Time Monitoring</h3><p>Continuous surveillance of threats across your infrastructure.</p></div>
+        <div class="service-box">📊<h3>Threat Analytics</h3><p>Advanced analytics to understand attack patterns.</p></div>
+        <div class="service-box">🚨<h3>Incident Response</h3><p>Rapid mitigation with automated response workflows.</p></div>
+    </div>
+</section>
+
+<!-- GET IN TOUCH -->
+<section id="contact" class="section-contact">
+    <div class="section-header">
+        <h2>Get in Touch</h2>
+        <p>Our security engineers are available 24/7 to guide you, respond to incidents, and explain the solutions step by step.</p>
+    </div>
+    <div class="contact-container">
+        <form>
+            <input type="text" placeholder="Full Name" required>
+            <input type="email" placeholder="Work Email" required>
+            <textarea rows="5" placeholder="Describe the security incident or inquiry..." required></textarea>
+            <button type="submit" class="btn-submit">Send Secure Message</button>
+        </form>
+    </div>
+</section>
+
+<footer>&copy; 2025 Suraksha.AI. End-to-End Encrypted Platform.</footer>
+<script type="module">
+// ===== Firebase Imports =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// ===== Firebase Config =====
+const firebaseConfig = {
+  apiKey: "AIzaSyA8x_qtJfIO2Io8CfSS0F2RZLJV6FQivT4",
+  authDomain: "suraksha-ai-62025.firebaseapp.com",
+  projectId: "suraksha-ai-62025",
+  appId: "1:134680938078:web:7924716e049318e38756cf"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ===== Profile Dropdown =====
+const profileIcon = document.getElementById("profileIcon");
+const profileDropdown = document.getElementById("profileDropdown");
+const profileEmail = document.getElementById("profileEmail");
+const profileImage = document.getElementById("profileImage");
+const dropdownLogoutBtn = document.getElementById("dropdownLogoutBtn");
+
+// Display profile info when logged in
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    // Redirect if not logged in
+    window.location.href = "login.html";
+  } else {
+    // Show user info
+    profileEmail.textContent = user.email || localStorage.getItem("userEmail") || "user@example.com";
+    const photo = user.photoURL || localStorage.getItem("userPhoto") || "../assets/profile-placeholder.png";
+    profileImage.src = photo;
+    profileIcon.querySelector("img").src = photo;
+  }
+});
+
+// Toggle dropdown
+profileIcon.addEventListener("click", e => {
+  e.stopPropagation();
+  profileDropdown.classList.toggle("show");
+});
+window.addEventListener("click", e => {
+  if (!profileDropdown.contains(e.target) && !profileIcon.contains(e.target)) {
+    profileDropdown.classList.remove("show");
+  }
+});
+
+// Logout
+dropdownLogoutBtn.addEventListener("click", async () => {
+  profileDropdown.classList.remove("show");
+  try {
+    await signOut(auth);
+  } catch(e) { console.log(e.message); }
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("userName");
+  localStorage.removeItem("userPhoto");
+  window.location.href = "login.html";
+});
+
+// ===== Parallax, 3D Tilt, Scroll Reveal (unchanged) =====
+window.addEventListener("scroll", () => {
+  document.querySelectorAll(".parallax").forEach(el => {
+    const speed = el.dataset.speed || 0.3;
+    el.style.transform = `translateY(${window.scrollY * speed}px)`;
+  });
+});
+
+document.querySelectorAll(".tool-card").forEach(card => {
+  card.addEventListener("mousemove", e => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const rotateX = ((y / rect.height) - 0.5) * 12;
+    const rotateY = ((x / rect.width) - 0.5) * 12;
+    card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
+  });
+  card.addEventListener("mouseleave", () => { card.style.transform = "rotateX(0) rotateY(0)"; });
+});
+
+const revealEls = document.querySelectorAll('.scroll-reveal, .tool-card, .service-box, footer');
+const revealOnScroll = () => {
+  revealEls.forEach((el, i) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top <= window.innerHeight*0.85) {
+      setTimeout(()=> el.classList.add('visible'), i*100);
+    }
+  });
+};
+window.addEventListener('scroll', revealOnScroll);
+window.addEventListener('load', revealOnScroll);
+
+// ===== HERO line-by-line animation (FIXED) =====
+window.addEventListener("load", () => {
+  document.querySelectorAll(".hero-line").forEach((line, i) => {
+    setTimeout(() => {
+      line.classList.add("visible");
+    }, i * 300);
+  });
+});
+
+
+
+
+// ===== Get in Touch Form Submission =====
+const contactForm = document.querySelector("#contact form");
+const contactMessage = document.createElement("div");
+contactMessage.style.marginBottom = "15px";
+contactMessage.style.fontWeight = "500";
+contactForm.prepend(contactMessage);
+
+contactForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = contactForm.querySelector('input[type="text"]').value.trim();
+  const email = contactForm.querySelector('input[type="email"]').value.trim();
+  const message = contactForm.querySelector('textarea').value.trim();
+
+  if (!name || !email || !message) {
+    contactMessage.textContent = "❌ Please fill all fields.";
+    contactMessage.style.color = "#ef4444";
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "messages"), {
+      name,
+      email,
+      message,
+      userUid: auth.currentUser.uid,
+      timestamp: serverTimestamp()
+    });
+    contactMessage.textContent = "✅ Message sent successfully!";
+    contactMessage.style.color = "#22d3ee";
+    contactForm.reset();
+  } catch (error) {
+    console.error("Error sending message:", error);
+    contactMessage.textContent = "❌ Failed to send message. Try again.";
+    contactMessage.style.color = "#ef4444";
+  }
+});
+</script>

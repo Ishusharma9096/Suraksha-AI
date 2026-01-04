@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault Analysis | Suraksha.AI</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+    --primary:#0ea5e9;
+    --primary-hover:#0284c7;
+    --bg-dark:#020617;
+    --card-bg:rgba(255,255,255,0.03);
+    --border:rgba(255,255,255,0.1);
+    --text-main:#ffffff;
+    --text-dim:#d9e6f9;
+    --success:#10b981;
+    --danger:#ef4444;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:Inter,sans-serif;
+    background:
+        linear-gradient(rgba(3, 8, 18, 0.85), rgba(3, 8, 18, 0.40)),
+        url("../assets/vault.png") no-repeat center center/cover;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+}
+
+.container{
+    width:100%;
+    max-width:520px;
+    padding:40px;
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-radius:28px;
+    backdrop-filter:blur(15px);
+    box-shadow:0 25px 50px rgba(0,0,0,0.5);
+}
+
+#inputView{display:block;}
+#resultView{display:none;}
+
+h2{text-align:center;color:var(--primary);}
+.subtitle{text-align:center;color:white;font-size:0.9rem;margin-bottom:20px;}
+
+select{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:15px;
+    background:rgba(0,0,0,0.4);
+    border:1px solid var(--border);
+    color:white;
+}
+
+.upload-box{
+    border:2px dashed var(--border);
+    padding:20px;
+    border-radius:16px;
+    text-align:center;
+    cursor:pointer;
+    background:rgba(0,0,0,0.25);
+    transition:0.3s;
+}
+
+.upload-box:hover{
+    border-color:var(--primary);
+}
+
+input[type=file]{display:none;}
+
+.file-name{
+    margin-top:12px;
+    font-size:0.85rem;
+    color:var(--primary);
+    font-weight:600;
+}
+
+.btn-group{
+    margin-top:25px;
+    display:flex;
+    gap:10px;
+}
+
+.btn{
+    flex:1;
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn.analyze{
+    background:var(--primary);
+    color:white;
+}
+.btn.analyze:hover{background:var(--primary-hover);transform:translateY(-2px);}
+
+.btn.cancel{
+    background:transparent;
+    border:1px solid var(--border);
+    color:white;
+}
+
+.chart-wrap{
+    height:180px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.stat{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.card{
+    background:rgba(255,255,255,0.05);
+    padding:12px;
+    border-radius:10px;
+}
+
+.label{
+    font-size:0.7rem;
+    color:white;
+    text-transform:uppercase;
+}
+
+.value{
+    font-weight:bold;
+    margin-top:5px;
+}
+
+.explain{
+    margin-top:15px;
+    padding:14px;
+    background:rgba(14,165,233,0.08);
+    border-left:4px solid var(--primary);
+    border-radius:10px;
+    font-size:0.8rem;
+    line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- INPUT -->
+<div id="inputView">
+    <h2>Vault Analysis</h2>
+    <p class="subtitle">ML-powered vault risk & integrity assessment</p>
+
+   
+
+    <div class="upload-box" onclick="document.getElementById('vaultFile').click()">
+        Click to upload vault file
+        <input type="file" id="vaultFile" onchange="showFile()">
+        <div class="file-name" id="fileName"></div>
+    </div>
+
+    <select id="lang">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="ta">Tamil</option>
+        <option value="mni">Manipuri</option>
+    </select>
+
+    <div class="btn-group">
+        <button class="btn analyze" onclick="analyzeVault()">Analyze Vault</button>
+        <button class="btn cancel" onclick="resetAll()">Cancel</button>
+    </div>
+</div>
+
+<!-- RESULT -->
+<div id="resultView">
+    <h3 style="text-align:center;color:#facc15">Vault Analysis Report</h3>
+
+    <div class="chart-wrap">
+        <canvas id="riskChart"></canvas>
+    </div>
+
+    <div class="stat">
+        <div class="card">
+            <div class="label">Risk Score</div>
+            <div class="value" id="riskScore">--</div>
+        </div>
+        <div class="card">
+            <div class="label">Verdict</div>
+            <div class="value" id="verdict">--</div>
+        </div>
+    </div>
+
+    <div class="explain" id="geminiExplain">
+        Generating AI explanation...
+    </div>
+
+    <button class="btn cancel" style="margin-top:20px" onclick="resetAll()">← Analyze Another File</button>
+</div>
+
+</div>
+
+<script>
+let chart=null;
+
+function showFile(){
+    const f=document.getElementById("vaultFile").files[0];
+    document.getElementById("fileName").innerText=f?"Selected: "+f.name:"";
+}
+
+async function analyzeVault(){
+    const input=document.getElementById("vaultFile");
+    const lang=document.getElementById("lang").value;
+
+    if(!input.files.length){
+        alert("Please upload a file");
+        return;
+    }
+
+    document.getElementById("inputView").style.display="none";
+    document.getElementById("resultView").style.display="block";
+
+    const formData=new FormData();
+    formData.append("file",input.files[0]);
+
+    try{
+        const res=await fetch("http://127.0.0.1:5000/vault-analyze",{
+            method:"POST",
+            body:formData
+        });
+
+        const data=await res.json();
+
+        let explanation=data.gemini_explanation || "No explanation returned.";
+
+        // 🌍 TRANSLATION LOGIC
+        if(lang!=="en"){
+            const tr=await fetch(
+                `https://api.mymemory.translated.net/get?q=${encodeURIComponent(explanation)}&langpair=en|${lang}`
+            );
+            const trData=await tr.json();
+            explanation=trData.responseData.translatedText || explanation;
+        }
+
+        document.getElementById("riskScore").innerText=data.risk_score+"%";
+        document.getElementById("verdict").innerText=data.verdict;
+        document.getElementById("geminiExplain").innerHTML=
+            `<b>Gemini AI Insight</b><br>${explanation}`;
+
+        drawChart(data.risk_score, data.verdict==="Malicious");
+
+    }catch(err){
+        document.getElementById("geminiExplain").innerText="Error analyzing vault.";
+    }
+}
+
+function drawChart(score,danger){
+    const ctx=document.getElementById("riskChart").getContext("2d");
+    if(chart) chart.destroy();
+
+    chart=new Chart(ctx,{
+        type:"doughnut",
+        data:{
+            datasets:[{
+                data:[score,100-score],
+                backgroundColor:[
+                    danger?"#ef4444":"#10b981",
+                    "rgba(255,255,255,0.12)"
+                ],
+                borderWidth:0,
+                circumference:180,
+                rotation:270
+            }]
+        },
+        options:{
+            cutout:"85%",
+            plugins:{legend:{display:false},tooltip:{enabled:false}}
+        }
+    });
+}
+
+function resetAll(){
+    document.getElementById("vaultFile").value="";
+    document.getElementById("fileName").innerText="";
+    document.getElementById("inputView").style.display="block";
+    document.getElementById("resultView").style.display="none";
+}
+</script>
+
+</body>
+</html>

@@ -127,44 +127,7 @@ async function saveUserProfile(user, providerType) {
   }
 }
 
-// Email login
-loginBtn.addEventListener("click", async () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
 
-  if (!email || !password) {
-    alert("Please enter email and password");
-    return;
-  }
-
-  try {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    await saveUserProfile(result.user, "email");
-
-    localStorage.setItem("userEmail", result.user.email);
-    localStorage.setItem("userName", result.user.displayName || "User");
-    localStorage.setItem("userPhoto", result.user.photoURL || "");
-
-    window.location.href = "website.html";
-  } catch (err) {
-    if (err.code === "auth/user-not-found") {
-      try {
-        const result = await createUserWithEmailAndPassword(auth, email, password);
-        await saveUserProfile(result.user, "email");
-
-        localStorage.setItem("userEmail", result.user.email);
-        localStorage.setItem("userName", "User");
-        localStorage.setItem("userPhoto", "");
-
-        window.location.href = "website.html";
-      } catch (createErr) {
-        alert("Error creating account: " + createErr.message);
-      }
-    } else {
-      alert(err.message);
-    }
-  }
-});
 
 // Google login
 googleBtn.addEventListener("click", async () => {
@@ -191,3 +154,4 @@ googleBtn.addEventListener("click", async () => {
 
 </body>
 </html>
+

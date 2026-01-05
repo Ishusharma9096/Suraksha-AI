@@ -1,6 +1,16 @@
+
+
 {
+  "version": 2,
+  "public": true,
   "routes": [
-    { "src": "/", "dest": "/html/index.html" },
-    { "src": "/(.*)", "dest": "/$1" }
+    {
+      "src": "^/$",
+      "dest": "/html/index.html"
+    },
+    {
+      "src": "^(.*)$",
+      "dest": "$1"
+    }
   ]
 }

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Login | Suraksha.AI</title>
 
 <style>
@@ -13,54 +13,60 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   color: white;
 }
 
 .login-card {
-  width: 360px;
-  background: #0f172a;
-  padding: 45px 40px;
-  border-radius: 18px;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+  width: 420px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.85);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
   text-align: center;
 }
 
 .logo {
-  font-size: 1.6rem;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: 1px;
   color: #22d3ee;
-  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
 .subtitle {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  margin-bottom: 30px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #cbd5f5;
+  opacity: 0.9;
 }
 
 .google-btn {
+  margin-top: 36px;
   width: 100%;
   padding: 14px;
-  border-radius: 30px;
-  border: 1px solid #475569;
+  border-radius: 999px;
+  border: 1px solid #334155;
   background: transparent;
   color: white;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.25s ease;
 }
 
 .google-btn:hover {
-  background: #020617;
-  border-color: #22d3ee;
+  background: rgba(255,255,255,0.05);
+  transform: translateY(-2px);
 }
 
-.demo-note {
-  font-size: 0.75rem;
+.google-btn:disabled {
   opacity: 0.6;
-  margin-top: 15px;
+  cursor: not-allowed;
 }
 </style>
 </head>
@@ -70,16 +76,12 @@ body {
 <div class="login-card">
   <div class="logo">🛡 SURAKSHA.AI</div>
   <div class="subtitle">
-    Secure demo access for evaluation
+    Secure AI-powered cybersecurity platform
   </div>
 
   <button type="button" class="google-btn">
     Continue with Google
   </button>
-
-  <div class="demo-note">
-    Demo login via Google OAuth only
-  </div>
 </div>
 
 <script type="module">
@@ -96,20 +98,26 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyA8x_qtJfIO2Io8CfSS0F2RZLJV6FQivT4",
   authDomain: "suraksha-ai-62025.firebaseapp.com",
   projectId: "suraksha-ai-62025",
+  storageBucket: "suraksha-ai-62025.firebasestorage.app",
+  messagingSenderId: "134680938078",
   appId: "1:134680938078:web:7924716e049318e38756cf"
 };
 
+/* Init */
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
+/* UI */
 const googleBtn = document.querySelector(".google-btn");
 
+/* Save user profile */
 async function saveUserProfile(user) {
   await setDoc(
     doc(db, "users", user.uid),
@@ -125,21 +133,22 @@ async function saveUserProfile(user) {
   );
 }
 
+/* Google login */
 googleBtn.addEventListener("click", async () => {
   googleBtn.disabled = true;
-  googleBtn.innerText = "Opening Google...";
+  googleBtn.innerText = "Signing in...";
 
   try {
     const result = await signInWithPopup(auth, provider);
     await saveUserProfile(result.user);
 
-    localStorage.setItem("userEmail", result.user.email);
-    localStorage.setItem("userName", result.user.displayName || "User");
+    localStorage.setItem("userName", result.user.displayName || "");
+    localStorage.setItem("userEmail", result.user.email || "");
     localStorage.setItem("userPhoto", result.user.photoURL || "");
 
     window.location.href = "website.html";
   } catch (err) {
-    alert(err.message);
+    alert("Login failed: " + err.message);
   } finally {
     googleBtn.disabled = false;
     googleBtn.innerText = "Continue with Google";
@@ -149,4 +158,3 @@ googleBtn.addEventListener("click", async () => {
 
 </body>
 </html>
-

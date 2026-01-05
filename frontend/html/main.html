@@ -1,0 +1,242 @@
+<style>
+    /* Reset and Base Styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --bg-color: #030812;
+        --accent-blue: #ebefeb;
+        --text-secondary: #94a3b8;
+        --alert-red: #8b2020;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        color: white;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        overflow: hidden;
+        height: 100vh;
+        /* Creating the dark tech gradient background */
+        background:
+        linear-gradient(rgba(3, 8, 18, 0.85), rgba(3, 8, 18, 0.40)),
+        url("../assets/background.png") no-repeat center center/cover;
+}
+    
+
+    /* Header & Navigation */
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 25px 50px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 100;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+    }
+
+    .logo-icon {
+        color: var(--accent-blue);
+        margin-right: 10px;
+        font-size: 1.5rem;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 25px;
+    }
+
+    .nav-links a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: 0.3s;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+        color: var(--accent-blue);
+    }
+
+    .btn-get-protected {
+        border: 1.5px solid var(--accent-blue);
+        color: var(--accent-blue);
+        padding: 8px 18px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background 0.3s;
+    }
+
+    .btn-get-protected:hover {
+        background: rgba(0, 163, 255, 0.1);
+    }
+
+    /* Main Hero Content */
+    .hero-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        text-align: center;
+        padding: 0 20px;
+    }
+
+    .next-gen-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0, 163, 255, 0.05);
+        border: 1px solid rgba(0, 163, 255, 0.2);
+        padding: 6px 15px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: var(--accent-blue);
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .dot {
+        height: 6px;
+        width: 6px;
+        background-color: var(--accent-blue);
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .hero-title {
+        font-size: 6rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        letter-spacing: -2px;
+        position: relative;
+    }
+
+    .hero-title span {
+        color: var(--accent-blue);
+    }
+
+    .hero-description {
+        color: var(--text-secondary);
+        font-size: 1.25rem;
+        line-height: 1.6;
+        max-width: 800px;
+        margin-bottom: 40px;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 20px;
+    }
+
+    .btn-explore {
+        background-color: var(--accent-blue);
+        color: #000;
+        padding: 15px 35px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-demo {
+        background-color: transparent;
+        color: white;
+        padding: 15px 35px;
+        border-radius: 50px;
+        text-decoration: none;
+        border: 1px solid #334155;
+    }
+
+    /* Sidebar Alert */
+    .phishing-sidebar {
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: var(--alert-red);
+        padding: 20px 12px;
+        border-radius: 12px 0 0 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        box-shadow: -5px 0 20px rgba(139, 32, 32, 0.3);
+    }
+
+    .phishing-text {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-weight: 700;
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+    }
+
+    /* Scroll Section */
+    .scroll-to-verify {
+        position: absolute;
+        bottom: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-secondary);
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+    }
+
+    .scroll-line {
+        width: 1px;
+        height: 60px;
+        background: linear-gradient(to bottom, var(--accent-blue), transparent);
+    }
+</style>
+
+<header>
+    <div class="logo">
+        <span class="logo-icon">🛡</span> SURAKSHA.AI
+    </div>
+    <nav class="nav-links">
+        <a href="#" class="active">Home</a>
+        <a href="#">Dashboard</a>
+        <a href="#">Analyzer</a>
+        <a href="#">About</a>
+        <a href="#">Services</a>
+        <a href="#">Contact</a>
+    </nav>
+    <a href="#" class="btn-get-protected">Get Protected</a>
+</header>
+
+<main class="hero-container">
+    <div class="next-gen-badge">
+        <span class="dot"></span> Next Generation Cyber Defense
+    </div>
+
+    <h1 class="hero-title">SURAKSHA<span>.AI</span></h1>
+
+    <p class="hero-description">
+        Autonomous security infrastructure for the modern web.<br>
+        Detect, analyze, and neutralize threats in real-time.
+    </p>
+
+    <div class="btn-group">
+        <a href="login.html" class="btn-explore">Explore Platform <span>›</span></a>
+    </div>
+
+    
+</main>
+

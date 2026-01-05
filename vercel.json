@@ -1,15 +1,14 @@
-
 {
   "version": 2,
-  "public": true,
   "routes": [
     {
       "src": "^/$",
-      "dest": "/frontend/html/index.html"
+      "dest": "/html/index.html"
     },
     {
-      "src": "^(.*)$",
-      "dest": "$1"
+      "src": "^/(.*)",
+      "dest": "/html/$1"
     }
   ]
 }
+

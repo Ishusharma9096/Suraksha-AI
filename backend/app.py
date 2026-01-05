@@ -9,7 +9,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 # ----------------- Gemini (GenAI) -----------------
-import google.generativeai as genai
+
+from google import genai
 
 
 # ----------------- Flask App -----------------
@@ -252,4 +253,5 @@ def scan_file():
 if __name__ == "__main__":
     print("🚀 Starting SurakshaAI backend on http://0.0.0.0:5000")
     app.run(host="0.0.0.0", port=5000)
+
 

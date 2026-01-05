@@ -235,7 +235,8 @@ async function analyzeVault(){
     formData.append("file",input.files[0]);
 
     try{
-        const res=await fetch("http://127.0.0.1:5000/vault-analyze",{
+        const res = await fetch("https://suraksha-ai-oue7.onrender.com/vault-analyze", {
+
             method:"POST",
             body:formData
         });
@@ -300,3 +301,4 @@ function resetAll(){
 
 </body>
 </html>
+

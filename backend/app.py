@@ -11,15 +11,12 @@ from flask_cors import CORS
 # ----------------- Gemini (GenAI) -----------------
 from google import genai
 
-
-
 # ----------------- Flask App -----------------
 app = Flask(__name__)
 CORS(app)
 
 # ----------------- Gemini Key -----------------
 GENAI_API_KEY = os.getenv("GENAI_API_KEY")
-
 if not GENAI_API_KEY:
     raise RuntimeError("❌ GENAI_API_KEY environment variable not set")
 
@@ -48,6 +45,14 @@ with open(os.path.join(BASE_DIR, "vectorizer.pkl"), "rb") as f:
 
 print("✅ ML model & vectorizer loaded")
 
+# ----------------- Language Map -----------------
+LANGUAGE_MAP = {
+    "en": "English",
+    "hi": "Hindi",
+    "ta": "Tamil",
+    "mni": "Manipuri"
+}
+
 # ----------------- Helpers -----------------
 def calculate_entropy(file_bytes):
     if not file_bytes:
@@ -60,56 +65,66 @@ def calculate_entropy(file_bytes):
     return round(entropy, 2)
 
 
-def gemini_explain_file(entropy, risk_score, verdict):
+# ----------------- Gemini: File / Malware Explain -----------------
+def gemini_explain_file(entropy, risk_score, verdict, language="en"):
     try:
+        lang_name = LANGUAGE_MAP.get(language, "English")
+
         prompt = f"""
 You are a cybersecurity expert.
 
-A file analysis returned:
+IMPORTANT:
+- Respond ONLY in {lang_name}
+- Keep the explanation simple (2–3 lines)
+- Do NOT mention AI, ML, models, or internal systems
+
+Analysis Result:
 Entropy: {entropy}
 Risk Score: {risk_score}
 Verdict: {verdict}
-
-Explain what this means in simple terms (2–3 lines).
-Do not mention AI or ML.
 """
         res = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=prompt
         )
         return res.text.strip()
+
     except Exception as e:
         print("Gemini error:", e)
         return "Explanation unavailable."
 
 
-def gemini_explain_phishing(message, risk, confidence, signals):
+# ----------------- Gemini: Phishing Explain -----------------
+def gemini_explain_phishing(message, risk, confidence, signals, language="en"):
     try:
+        lang_name = LANGUAGE_MAP.get(language, "English")
+
         prompt = f"""
 You are a cybersecurity expert.
 
-Analyze the following message for phishing:
+IMPORTANT:
+- Respond ONLY in {lang_name}
+- Keep it simple (2–3 lines)
+- Do NOT mention AI, ML, files, entropy, or models
 
 Message:
-\"\"\"{message}\"\"\" 
+\"\"\"{message}\"\"\"
 
 Detected indicators:
 {', '.join(signals)}
 
 Final Verdict: {risk}
 Confidence: {confidence}%
-
-Explain in 2–3 simple lines why this message is considered phishing or safe.
-Do NOT mention files, entropy, malware, AI, or ML.
 """
         res = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=prompt
         )
         return res.text.strip()
+
     except Exception as e:
         print("Gemini phishing error:", e)
-        return "This message shows characteristics commonly associated with phishing attempts."
+        return "Explanation unavailable."
 
 
 # ----------------- Routes -----------------
@@ -123,6 +138,7 @@ def home():
 def analyze():
     data = request.get_json()
     message = data.get("message", "").strip()
+    language = data.get("language", "en")
 
     if not message:
         return jsonify({"error": "Message is required"}), 400
@@ -162,7 +178,8 @@ def analyze():
         message,
         risk,
         confidence,
-        active_signals or ["ML-based classification"]
+        active_signals or ["ML-based classification"],
+        language
     )
 
     return jsonify({
@@ -187,6 +204,8 @@ def analyze():
 @app.route("/vault-analyze", methods=["POST"])
 def vault_analyze():
     file = request.files.get("file")
+    language = request.form.get("language", "en")
+
     if not file:
         return jsonify({"error": "No file received"}), 400
 
@@ -203,7 +222,7 @@ def vault_analyze():
         risk_score = 20
         verdict = "Safe"
 
-    explanation = gemini_explain_file(entropy, risk_score, verdict)
+    explanation = gemini_explain_file(entropy, risk_score, verdict, language)
 
     return jsonify({
         "risk_score": risk_score,
@@ -216,6 +235,8 @@ def vault_analyze():
 @app.route("/scan-file", methods=["POST"])
 def scan_file():
     file = request.files.get("file")
+    language = request.form.get("language", "en")
+
     if not file:
         return jsonify({"error": "No file uploaded"}), 400
 
@@ -232,7 +253,7 @@ def scan_file():
         risk_score = 20
         verdict = "Clean"
 
-    explanation = gemini_explain_file(entropy, risk_score, verdict)
+    explanation = gemini_explain_file(entropy, risk_score, verdict, language)
 
     return jsonify({
         "file_name": file.filename,
@@ -253,3 +274,4 @@ def scan_file():
 if __name__ == "__main__":
     print("🚀 Starting SurakshaAI backend on http://0.0.0.0:5000")
     app.run(host="0.0.0.0", port=5000)
+

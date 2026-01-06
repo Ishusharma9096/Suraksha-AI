@@ -185,20 +185,24 @@ ul{padding-left:18px;font-size:.85rem;line-height:1.6}
 let riskChart=null;
 
 async function detectPhishing(){
-    const input=document.getElementById("phishingInput").value.trim();
+    const input = document.getElementById("phishingInput").value.trim();
+    const language = document.getElementById("language").value; // ✅ ADD THIS LINE
+
     if(!input){alert("Enter input");return;}
 
     document.getElementById("inputView").style.display="none";
     document.getElementById("predictionView").style.display="block";
 
-    const res=await fetch("https://suraksha-ai-oue7.onrender.com/analyze", {
-
+    const res = await fetch("https://suraksha-ai-oue7.onrender.com/analyze", {
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message:input})
+        body:JSON.stringify({
+            message: input,
+            language: language   // ✅ SEND LANGUAGE TO BACKEND
+        })
     });
 
-    const data=await res.json();
+    const data = await res.json();
 
     document.getElementById("riskValue").innerText=data.risk;
     document.getElementById("riskValue").style.color =
@@ -219,66 +223,9 @@ async function detectPhishing(){
         renderChart(Number(data.confidence),data.risk);
     },100);
 }
-
-function renderSignals(signals){
-    const ul=document.getElementById("signalList");
-    ul.innerHTML="";
-    if(!signals){
-        ul.innerHTML=`
-        <li>⚠ Suspicious link detected</li>
-        <li>⚠ Urgent language</li>
-        <li>⚠ Possible impersonation</li>`;
-        return;
-    }
-    Object.keys(signals).forEach(k=>{
-        if(signals[k]) ul.innerHTML+=`<li>⚠ ${k.replace(/_/g," ")}</li>`;
-    });
-}
-
-function renderMeta(meta){
-    document.getElementById("metaText").innerText =
-`Scan ID: PHISH-${Math.random().toString(36).substr(2,8).toUpperCase()}
-Engine: Suraksha-Phish-ML v1.0
-Time: ${new Date().toISOString()}`;
-}
-
-function renderChart(score,risk){
-    const canvas=document.getElementById("riskChart");
-    const ctx=canvas.getContext("2d");
-
-    let color =
-        risk==="Dangerous"?"#ef4444":
-        risk==="Suspicious"?"#facc15":"#10b981";
-
-    if(riskChart) riskChart.destroy();
-
-    riskChart=new Chart(ctx,{
-        type:"doughnut",
-        data:{
-            datasets:[{
-                data:[score,100-score],
-                backgroundColor:[color,"rgba(255,255,255,.15)"],
-                borderWidth:0,
-                circumference:180,
-                rotation:270,
-                borderRadius:12
-            }]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{legend:{display:false},tooltip:{enabled:false}},
-            cutout:"85%"
-        }
-    });
-}
-
-function goBack(){
-    document.getElementById("predictionView").style.display="none";
-    document.getElementById("inputView").style.display="block";
-}
-function goHome(){window.location.href="website.html";}
 </script>
+
 
 </body>
 </html>
+

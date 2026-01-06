@@ -182,77 +182,100 @@ ul{padding-left:18px;font-size:.85rem;line-height:1.6}
 </div>
 
 <script>
-let riskChart=null;
+let riskChart = null;
 
-async function detectPhishing(){
-    const input=document.getElementById("phishingInput").value.trim();
-    const language=document.getElementById("language").value; // ✅ ADDED
+/* ========= UI TRANSLATIONS ========= */
+const UI_TRANSLATIONS = {
+    hi: {
+        report: "विश्लेषण रिपोर्ट",
+        status: "स्थिति",
+        verdict: "निर्णय",
+        clean: "सुरक्षित",
+        malware: "मैलवेयर मिला",
+        explanation: "एआई विश्लेषण",
+    },
+    ta: {
+        report: "ஆய்வு அறிக்கை",
+        status: "நிலை",
+        verdict: "தீர்ப்பு",
+        clean: "பாதுகாப்பானது",
+        malware: "மால்வேர் கண்டறியப்பட்டது",
+        explanation: "AI பகுப்பாய்வு",
+    },
+    mni: {
+        report: "এনালাইসিস রিপোর্ট",
+        status: "স্টেটাস",
+        verdict: "ভেরডিক্ট",
+        clean: "সেইফ",
+        malware: "মালৱেয়ার ফাউন্দ অই",
+        explanation: "AI এক্সপ্লানেশন",
+    }
+};
+/* ================================= */
 
-    if(!input){alert("Enter input");return;}
+function updateFileName(){
+    const file=document.getElementById("fileInput").files[0];
+    document.getElementById("fileNameDisplay").innerText =
+        file ? file.name : "";
+}
+
+async function scanFile(){
+    const fileInput=document.getElementById("fileInput");
+    const language=document.getElementById("language").value;
+    const t = UI_TRANSLATIONS[language];
+
+    if(!fileInput.files.length){
+        alert("Please upload a file");
+        return;
+    }
 
     document.getElementById("inputView").style.display="none";
     document.getElementById("predictionView").style.display="block";
 
-    const res=await fetch("https://suraksha-ai-oue7.onrender.com/analyze", {
+    const formData=new FormData();
+    formData.append("file",fileInput.files[0]);
+    formData.append("language",language); // ✅ send language
+
+    const res=await fetch("https://suraksha-ai-oue7.onrender.com/malware-scan",{
         method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            message: input,
-            language: language // ✅ ADDED
-        })
+        body:formData
     });
 
     const data=await res.json();
 
-    document.getElementById("riskValue").innerText=data.risk;
-    document.getElementById("riskValue").style.color =
-        data.risk==="Dangerous"?"var(--danger)":
-        data.risk==="Suspicious"?"var(--warning)":"var(--success)";
+    /* ===== Translate verdict ===== */
+    let verdictText = data.verdict;
+    if(t){
+        if(data.verdict==="Malware") verdictText=t.malware;
+        if(data.verdict==="Clean") verdictText=t.clean;
+    }
 
-    document.getElementById("confidenceValue").innerText=data.confidence+"%";
-    document.getElementById("explanationText").innerText=data.ai_explanation;
+    document.getElementById("statusText").innerText =
+        data.score > 70 ? "⚠" : "✔";
 
-    document.getElementById("actionText").innerText =
-        data.recommended_action ||
-        "Do not click links or share information. Report and delete this message.";
+    document.getElementById("threatId").innerText = verdictText;
 
-    renderSignals(data.phishing_signals);
-    renderMeta(data.scan_metadata);
+    document.getElementById("explanationBox").innerText =
+        data.ai_explanation || (t ? t.explanation : "AI analysis complete.");
+
+    document.getElementById("detailsBox").innerHTML = `
+        <div class="detail-row"><span>Entropy</span><span>${data.entropy}</span></div>
+        <div class="detail-row"><span>Suspicious APIs</span><span>${data.suspicious_apis}</span></div>
+        <div class="detail-row"><span>Heuristic Score</span><span>${data.score}%</span></div>
+    `;
+
+    document.getElementById("rawOutput").innerText =
+        JSON.stringify(data,null,2);
 
     setTimeout(()=>{
-        renderChart(Number(data.confidence),data.risk);
+        renderChart(Number(data.score), data.verdict);
     },100);
 }
 
-function renderSignals(signals){
-    const ul=document.getElementById("signalList");
-    ul.innerHTML="";
-    if(!signals){
-        ul.innerHTML=`
-            <li>⚠ Suspicious link detected</li>
-            <li>⚠ Urgent language</li>
-            <li>⚠ Possible impersonation</li>`;
-        return;
-    }
-    Object.keys(signals).forEach(k=>{
-        if(signals[k]) ul.innerHTML+=`<li>⚠ ${k.replace(/_/g," ")}</li>`;
-    });
-}
+function renderChart(score, verdict){
+    const ctx=document.getElementById("riskChart").getContext("2d");
 
-function renderMeta(meta){
-    document.getElementById("metaText").innerText =
-`Scan ID: PHISH-${Math.random().toString(36).substr(2,8).toUpperCase()}
-Engine: Suraksha-Phish-ML v1.0
-Time: ${new Date().toISOString()}`;
-}
-
-function renderChart(score,risk){
-    const canvas=document.getElementById("riskChart");
-    const ctx=canvas.getContext("2d");
-
-    let color =
-        risk==="Dangerous"?"#ef4444":
-        risk==="Suspicious"?"#facc15":"#10b981";
+    let color = verdict==="Malware" ? "#ef4444" : "#10b981";
 
     if(riskChart) riskChart.destroy();
 
@@ -264,8 +287,7 @@ function renderChart(score,risk){
                 backgroundColor:[color,"rgba(255,255,255,.15)"],
                 borderWidth:0,
                 circumference:180,
-                rotation:270,
-                borderRadius:12
+                rotation:270
             }]
         },
         options:{
@@ -277,12 +299,10 @@ function renderChart(score,risk){
     });
 }
 
-function goBack(){
+function resetPage(){
     document.getElementById("predictionView").style.display="none";
     document.getElementById("inputView").style.display="block";
 }
-
-function goHome(){window.location.href="website.html";}
 </script>
 </body>
 </html>

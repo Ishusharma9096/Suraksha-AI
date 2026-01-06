@@ -7,32 +7,21 @@ from datetime import datetime
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
-# ----------------- Gemini (GenAI) -----------------
 from google import genai
 
 # ----------------- Flask App -----------------
 app = Flask(__name__)
 CORS(app)
 
-# ----------------- Gemini Key -----------------
+# ----------------- Gemini -----------------
 GENAI_API_KEY = os.getenv("GENAI_API_KEY")
 if not GENAI_API_KEY:
-    raise RuntimeError("❌ GENAI_API_KEY environment variable not set")
+    raise RuntimeError("GENAI_API_KEY not set")
 
 client = genai.Client(api_key=GENAI_API_KEY)
 
-# ----------------- Pick Gemini Model -----------------
-GEMINI_MODEL = None
-for m in client.models.list():
-    if any(k in m.name.lower() for k in ["flash", "pro", "2.5"]):
-        GEMINI_MODEL = m.name
-        break
-
-if not GEMINI_MODEL:
-    raise RuntimeError("❌ No suitable Gemini model found")
-
-print(f"✅ Using Gemini model: {GEMINI_MODEL}")
+# Pick a model
+GEMINI_MODEL = "models/gemini-1.5-flash"
 
 # ----------------- Load ML Model -----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -43,8 +32,6 @@ with open(os.path.join(BASE_DIR, "model.pkl"), "rb") as f:
 with open(os.path.join(BASE_DIR, "vectorizer.pkl"), "rb") as f:
     vectorizer = pickle.load(f)
 
-print("✅ ML model & vectorizer loaded")
-
 # ----------------- Language Map -----------------
 LANGUAGE_MAP = {
     "en": "English",
@@ -54,86 +41,41 @@ LANGUAGE_MAP = {
 }
 
 # ----------------- Helpers -----------------
-def calculate_entropy(file_bytes):
-    if not file_bytes:
+def calculate_entropy(data):
+    if not data:
         return 0
-    counts = Counter(file_bytes)
+    freq = Counter(data)
     entropy = 0
-    for count in counts.values():
-        p = count / len(file_bytes)
+    for c in freq.values():
+        p = c / len(data)
         entropy -= p * math.log2(p)
     return round(entropy, 2)
 
-
-# ----------------- Gemini: File / Malware Explain -----------------
-def gemini_explain_file(entropy, risk_score, verdict, language="en"):
+# ----------------- Gemini Explain -----------------
+def gemini_explain(prompt, language):
     try:
-        lang_name = LANGUAGE_MAP.get(language, "English")
+        lang = LANGUAGE_MAP.get(language, "English")
+        final_prompt = f"""
+Respond ONLY in {lang}.
+Keep it short (2–3 lines).
+Do not mention AI or models.
 
-        prompt = f"""
-You are a cybersecurity expert.
-
-IMPORTANT:
-- Respond ONLY in {lang_name}
-- Keep the explanation simple (2–3 lines)
-- Do NOT mention AI, ML, models, or internal systems
-
-Analysis Result:
-Entropy: {entropy}
-Risk Score: {risk_score}
-Verdict: {verdict}
+{prompt}
 """
         res = client.models.generate_content(
             model=GEMINI_MODEL,
-            contents=prompt
+            contents=final_prompt
         )
         return res.text.strip()
-
-    except Exception as e:
-        print("Gemini error:", e)
+    except Exception:
         return "Explanation unavailable."
-
-
-# ----------------- Gemini: Phishing Explain -----------------
-def gemini_explain_phishing(message, risk, confidence, signals, language="en"):
-    try:
-        lang_name = LANGUAGE_MAP.get(language, "English")
-
-        prompt = f"""
-You are a cybersecurity expert.
-
-IMPORTANT:
-- Respond ONLY in {lang_name}
-- Keep it simple (2–3 lines)
-- Do NOT mention AI, ML, files, entropy, or models
-
-Message:
-\"\"\"{message}\"\"\"
-
-Detected indicators:
-{', '.join(signals)}
-
-Final Verdict: {risk}
-Confidence: {confidence}%
-"""
-        res = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=prompt
-        )
-        return res.text.strip()
-
-    except Exception as e:
-        print("Gemini phishing error:", e)
-        return "Explanation unavailable."
-
 
 # ----------------- Routes -----------------
 @app.route("/")
 def home():
-    return "✅ SurakshaAI Backend is running!"
+    return "✅ SurakshaAI backend running"
 
-
-# ================= PHISHING ANALYSIS =================
+# ================= PHISHING =================
 @app.route("/analyze", methods=["POST"])
 def analyze():
     data = request.get_json()
@@ -141,21 +83,19 @@ def analyze():
     language = data.get("language", "en")
 
     if not message:
-        return jsonify({"error": "Message is required"}), 400
+        return jsonify({"error": "Message required"}), 400
 
     text = message.lower()
 
-    phishing_signals = {
-        "suspicious_link": bool(re.search(r"https?://\S+", text)),
-        "email_address_present": bool(re.search(r"[\w\.-]+@[\w\.-]+\.\w+", text)),
-        "urgent_language": any(w in text for w in ["urgent", "immediately", "act now", "verify now"]),
-        "impersonation": any(w in text for w in ["bank", "paypal", "government", "admin", "amazon"]),
-        "credential_request": any(w in text for w in ["otp", "password", "login", "verify account"])
+    signals = {
+        "suspicious_link": bool(re.search(r"https?://", text)),
+        "email_address_present": bool(re.search(r"@", text)),
+        "urgent_language": any(w in text for w in ["urgent", "verify", "immediately"]),
+        "impersonation": any(w in text for w in ["bank", "paypal", "amazon", "government"]),
+        "credential_request": any(w in text for w in ["otp", "password", "login"])
     }
 
-    active_signals = [k.replace("_", " ") for k, v in phishing_signals.items() if v]
-    score = sum(phishing_signals.values())
-
+    score = sum(signals.values())
     X = vectorizer.transform([message])
     ml_pred = model.predict(X)[0]
 
@@ -166,112 +106,81 @@ def analyze():
 
     if score >= 4:
         risk = "Dangerous"
-        confidence = min(95, 70 + score * 5)
+        confidence = 90
     elif score >= 2:
         risk = "Suspicious"
-        confidence = min(85, 55 + score * 5)
+        confidence = 65
     else:
         risk = "Safe"
-        confidence = max(30, 85 - score * 10)
+        confidence = 30
 
-    ai_explanation = gemini_explain_phishing(
-        message,
-        risk,
-        confidence,
-        active_signals or ["ML-based classification"],
+    explanation = gemini_explain(
+        f"""
+Message: {message}
+Verdict: {risk}
+Confidence: {confidence}%
+Indicators: {', '.join(k for k,v in signals.items() if v)}
+""",
         language
     )
 
     return jsonify({
         "risk": risk,
         "confidence": confidence,
-        "phishing_signals": phishing_signals,
-        "ai_explanation": ai_explanation,
-        "recommended_action": (
-            "Do not click any links or respond. Report and delete this message immediately."
-            if risk == "Dangerous"
-            else "Verify the sender before responding and avoid sharing sensitive information."
-        ),
+        "phishing_signals": signals,
+        "ai_explanation": explanation,
+        "recommended_action":
+            "Do not click links or respond." if risk == "Dangerous"
+            else "Verify sender before responding.",
         "scan_metadata": {
             "scan_id": f"PHISH-{os.urandom(4).hex().upper()}",
-            "engine": "Suraksha-Phish-ML v1.0",
-            "timestamp_utc": datetime.utcnow().isoformat() + "Z"
+            "engine": "Suraksha-Phish-ML",
+            "timestamp_utc": datetime.utcnow().isoformat()+"Z"
         }
     })
 
-
-# ================= VAULT ANALYSIS =================
-@app.route("/vault-analyze", methods=["POST"])
-def vault_analyze():
-    file = request.files.get("file")
-    language = request.form.get("language", "en")
-
-    if not file:
-        return jsonify({"error": "No file received"}), 400
-
-    file_bytes = file.read()
-    entropy = calculate_entropy(file_bytes)
-
-    if entropy > 7.6:
-        risk_score = 85
-        verdict = "Malicious"
-    elif entropy > 6.6:
-        risk_score = 55
-        verdict = "Suspicious"
-    else:
-        risk_score = 20
-        verdict = "Safe"
-
-    explanation = gemini_explain_file(entropy, risk_score, verdict, language)
-
-    return jsonify({
-        "risk_score": risk_score,
-        "verdict": verdict,
-        "gemini_explanation": explanation
-    })
-
-
-# ================= MALWARE SCANNER =================
+# ================= FILE / MALWARE =================
 @app.route("/scan-file", methods=["POST"])
 def scan_file():
     file = request.files.get("file")
     language = request.form.get("language", "en")
 
     if not file:
-        return jsonify({"error": "No file uploaded"}), 400
+        return jsonify({"error": "No file"}), 400
 
-    file_bytes = file.read()
-    entropy = calculate_entropy(file_bytes)
+    data = file.read()
+    entropy = calculate_entropy(data)
 
     if entropy > 7.6:
-        risk_score = 90
-        verdict = "Malicious"
+        score, verdict = 90, "Malware"
     elif entropy > 6.8:
-        risk_score = 60
-        verdict = "Suspicious"
+        score, verdict = 60, "Suspicious"
     else:
-        risk_score = 20
-        verdict = "Clean"
+        score, verdict = 20, "Clean"
 
-    explanation = gemini_explain_file(entropy, risk_score, verdict, language)
+    explanation = gemini_explain(
+        f"""
+File entropy: {entropy}
+Verdict: {verdict}
+Risk score: {score}%
+""",
+        language
+    )
 
     return jsonify({
         "file_name": file.filename,
         "entropy": entropy,
-        "risk_score": risk_score,
-        "status": "Complete",
+        "score": score,
         "verdict": verdict,
-        "gemini_explanation": explanation,
+        "ai_explanation": explanation,
         "scan_metadata": {
             "scan_id": f"MAL-{os.urandom(4).hex().upper()}",
-            "engine": "Suraksha-Malware-Entropy v1.0",
-            "timestamp_utc": datetime.utcnow().isoformat() + "Z"
+            "engine": "Suraksha-Malware",
+            "timestamp_utc": datetime.utcnow().isoformat()+"Z"
         }
     })
 
-
-# ----------------- Run Server -----------------
+# ----------------- Run -----------------
 if __name__ == "__main__":
-    print("🚀 Starting SurakshaAI backend on http://0.0.0.0:5000")
     app.run(host="0.0.0.0", port=5000)
 

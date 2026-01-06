@@ -3,125 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phishing Detector | Suraksha.AI</title>
+<title>Suraksha.AI – Phishing Detector</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
     --primary:#0ea5e9;
-    --primary-hover:#0284c7;
-    --bg-dark:#020617;
-    --card-bg:rgba(255,255,255,.04);
-    --border:rgba(255,255,255,.12);
-    --text-main:#ffffff;
-    --text-dim:#cbd5e1;
-    --accent:#facc15;
     --danger:#ef4444;
-    --warning:#facc15;
     --success:#10b981;
+    --bg:rgba(255,255,255,0.04);
+    --border:rgba(255,255,255,0.1);
+    --text:#ffffff;
+    --muted:#94a3b8;
+    --accent:#facc15;
 }
 
-*{color:var(--text-main)}
-
 body{
-    font-family:Inter,-apple-system,sans-serif;
-    background:
-      linear-gradient(rgba(3,8,18,.85),rgba(3,8,18,.5)),
-      url("../assets/Phishing.png") no-repeat center/cover;
     margin:0;
+    min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    min-height:100vh;
+    font-family:Inter,system-ui,sans-serif;
+    background:linear-gradient(rgba(2,6,23,.9),rgba(2,6,23,.7)),
+               url("assets/Phishing.png") center/cover no-repeat;
+    color:var(--text);
 }
 
-.app-container{
-    max-width:520px;
-    width:100%;
+.app{
+    width:520px;
     padding:40px;
-    background:var(--card-bg);
-    backdrop-filter:blur(15px);
-    border:1px solid var(--border);
     border-radius:28px;
-    box-shadow:0 25px 50px rgba(0,0,0,.55);
-    text-align:center;
+    background:var(--bg);
+    backdrop-filter:blur(16px);
+    border:1px solid var(--border);
+    box-shadow:0 25px 60px rgba(0,0,0,.6);
 }
 
-#predictionView{display:none}
+h2{color:var(--primary);margin:0}
+.sub{color:var(--muted);margin:8px 0 20px}
 
-h2{color:var(--primary);font-size:2.2rem;margin-bottom:8px}
-.subtitle{color:var(--text-dim);margin-bottom:25px;font-size:.9rem}
-
-input,select{
+input,select,button{
     width:100%;
     padding:14px;
-    background:rgba(0,0,0,.4);
-    border:1px solid var(--border);
-    border-radius:12px;
-    color:#fff;
     margin-bottom:15px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:rgba(0,0,0,.35);
+    color:white;
 }
 
 button{
-    width:100%;
-    padding:15px;
     background:var(--primary);
     border:none;
-    border-radius:12px;
     font-weight:600;
     cursor:pointer;
-    color:#fff;
 }
-button:hover{background:var(--primary-hover)}
+button:hover{background:#0284c7}
 
-.prediction-box{
-    background:rgba(0,0,0,.3);
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:18px;
+.box{
     margin-top:15px;
-    text-align:left;
+    padding:16px;
+    border-radius:18px;
+    border:1px solid var(--border);
+    background:rgba(0,0,0,.3);
 }
 
-.stat-label{
-    font-size:.75rem;
-    color:var(--text-dim);
+.label{
+    font-size:.7rem;
     text-transform:uppercase;
+    color:var(--muted);
 }
 
-.stat-value{
-    font-size:1.1rem;
-    font-weight:bold;
-    margin-top:5px;
-    display:block;
+.value{
+    margin-top:6px;
+    font-weight:700;
 }
 
-.chart-wrapper{
-    height:180px;
-    position:relative;
+.chart{
+    height:190px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 
-ul{padding-left:18px;font-size:.85rem;line-height:1.6}
+ul{padding-left:18px;font-size:.85rem}
 
-.button-row{
+.buttons{
     display:flex;
     gap:10px;
     margin-top:20px;
 }
-.button-row button{width:50%}
+.buttons button{width:50%}
 </style>
 </head>
 
 <body>
-<div class="app-container">
+<div class="app">
 
 <!-- INPUT -->
 <div id="inputView">
     <h2>Suraksha.AI</h2>
-    <p class="subtitle">Analyze URLs & messages for phishing threats</p>
+    <p class="sub">Analyze URLs & messages for phishing threats</p>
 
-    <input id="phishingInput" placeholder="Enter URL or message content">
+    <input id="input" placeholder="Enter URL or message">
     <select id="language">
         <option value="en">English</option>
         <option value="hi">Hindi</option>
@@ -129,196 +115,92 @@ ul{padding-left:18px;font-size:.85rem;line-height:1.6}
         <option value="mni">Manipuri</option>
     </select>
 
-    <button onclick="detectPhishing()">Analyze Threat</button>
+    <button onclick="scan()">Analyze</button>
 </div>
 
 <!-- RESULT -->
-<div id="predictionView">
+<div id="resultView" style="display:none">
 
-<h3 style="color:var(--accent)">ML Phishing Analysis</h3>
-
-<div class="prediction-box">
-    <div class="chart-wrapper">
-        <canvas id="riskChart"></canvas>
-    </div>
+<div class="box chart">
+    <canvas id="chart"></canvas>
 </div>
 
-<div class="prediction-box">
-    <span class="stat-label">ML Verdict</span>
-    <span id="riskValue" class="stat-value">--</span>
+<div class="box">
+    <div class="label">Verdict</div>
+    <div id="risk" class="value">--</div>
 </div>
 
-<div class="prediction-box">
-    <span class="stat-label">Confidence</span>
-    <span id="confidenceValue" class="stat-value">--</span>
+<div class="box">
+    <div class="label">Confidence</div>
+    <div id="conf" class="value">--</div>
 </div>
 
-<div class="prediction-box">
-    <span class="stat-label">Detected Phishing Signals</span>
-    <ul id="signalList"></ul>
+<div class="box">
+    <div class="label">Signals</div>
+    <ul id="signals"></ul>
 </div>
 
-<div class="prediction-box">
-    <span class="stat-label">AI Explanation</span>
-    <p id="explanationText" style="font-size:.85rem"></p>
+<div class="box">
+    <div class="label">AI Explanation</div>
+    <p id="explain"></p>
 </div>
 
-<div class="prediction-box">
-    <span class="stat-label">Recommended Action</span>
-    <p id="actionText" style="font-size:.85rem"></p>
-</div>
-
-<div class="prediction-box">
-    <span class="stat-label">Scan Metadata</span>
-    <p id="metaText" style="font-size:.75rem;color:var(--text-dim)"></p>
-</div>
-
-<div class="button-row">
-    <button onclick="goBack()">← Analyze Another</button>
-    <button onclick="goHome()">🏠 Home</button>
+<div class="buttons">
+    <button onclick="location.reload()">Analyze Again</button>
+    <button onclick="location.href='website.html'">Home</button>
 </div>
 
 </div>
 </div>
 
 <script>
-let riskChart = null;
+let chart=null;
 
-/* ========= UI TRANSLATIONS ========= */
-const UI_TRANSLATIONS = {
-    hi: {
-        clean: "सुरक्षित",
-        malware: "मैलवेयर मिला",
-        explanation: "एआई विश्लेषण पूरा हुआ"
-    },
-    ta: {
-        clean: "பாதுகாப்பானது",
-        malware: "மால்வேர் கண்டறியப்பட்டது",
-        explanation: "AI பகுப்பாய்வு முடிந்தது"
-    },
-    mni: {
-        clean: "সেইফ",
-        malware: "মালৱেয়ার ফাউন্দ অই",
-        explanation: "AI এনালাইসিস ফিনিশ অই"
-    }
-};
-/* ================================= */
+async function scan(){
+    const msg=document.getElementById("input").value.trim();
+    const lang=document.getElementById("language").value;
+    if(!msg) return alert("Enter text");
 
-function updateFileName(){
-    const fileInput = document.getElementById("fileInput");
-    const label = document.getElementById("fileNameDisplay");
-    if(fileInput && label && fileInput.files.length){
-        label.innerText = fileInput.files[0].name;
-    }
-}
+    inputView.style.display="none";
+    resultView.style.display="block";
 
-async function scanFile(){
-    const fileInput = document.getElementById("fileInput");
-    const language = document.getElementById("language")?.value || "en";
-    const t = UI_TRANSLATIONS[language] || null;
-
-    if(!fileInput || !fileInput.files.length){
-        alert("Please upload a file");
-        return;
-    }
-
-    document.getElementById("inputView")?.style.setProperty("display","none");
-    document.getElementById("predictionView")?.style.setProperty("display","block");
-
-    const formData = new FormData();
-    formData.append("file", fileInput.files[0]);
-    formData.append("language", language);
-
-    let data;
-    try {
-        const res = await fetch(
-            "https://suraksha-ai-oue7.onrender.com/malware-scan",
-            { method:"POST", body: formData }
-        );
-
-        if(!res.ok) throw new Error("Backend error");
-        data = await res.json();
-
-    } catch (e) {
-        alert("Scan failed. Please try again.");
-        location.reload();
-        return;
-    }
-
-    /* ===== Verdict Translation ===== */
-    let verdictText = data.verdict;
-    if(t){
-        if(data.verdict === "Malware") verdictText = t.malware;
-        if(data.verdict === "Clean") verdictText = t.clean;
-    }
-
-    const statusText = document.getElementById("statusText");
-    if(statusText){
-        statusText.innerText = data.score > 70 ? "⚠" : "✔";
-    }
-
-    const threatId = document.getElementById("threatId");
-    if(threatId){
-        threatId.innerText = verdictText;
-    }
-
-    const explanationBox = document.getElementById("explanationBox");
-    if(explanationBox){
-        explanationBox.innerText =
-            data.ai_explanation || (t ? t.explanation : "AI analysis complete.");
-    }
-
-    const detailsBox = document.getElementById("detailsBox");
-    if(detailsBox){
-        detailsBox.innerHTML = `
-            <div class="detail-row"><span>Entropy</span><span>${data.entropy}</span></div>
-            <div class="detail-row"><span>Suspicious APIs</span><span>${data.suspicious_apis}</span></div>
-            <div class="detail-row"><span>Heuristic Score</span><span>${data.score}%</span></div>
-        `;
-    }
-
-    const rawOutput = document.getElementById("rawOutput");
-    if(rawOutput){
-        rawOutput.innerText = JSON.stringify(data,null,2);
-    }
-
-    setTimeout(()=>{
-        renderChart(Number(data.score), data.verdict);
-    },100);
-}
-
-function renderChart(score, verdict){
-    const canvas = document.getElementById("riskChart");
-    if(!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    const color = verdict==="Malware" ? "#ef4444" : "#10b981";
-
-    if(riskChart) riskChart.destroy();
-
-    riskChart = new Chart(ctx,{
-        type:"doughnut",
-        data:{
-            datasets:[{
-                data:[score,100-score],
-                backgroundColor:[color,"rgba(255,255,255,.15)"],
-                borderWidth:0,
-                circumference:180,
-                rotation:270
-            }]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{legend:{display:false},tooltip:{enabled:false}},
-            cutout:"85%"
-        }
+    const res=await fetch("https://suraksha-ai-oue7.onrender.com/analyze",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({message:msg,language:lang})
     });
+
+    const d=await res.json();
+
+    risk.innerText=d.risk;
+    risk.style.color=d.risk==="Dangerous"? "var(--danger)":"var(--success)";
+    conf.innerText=d.confidence+"%";
+    explain.innerText=d.ai_explanation;
+
+    signals.innerHTML="";
+    for(const k in d.phishing_signals)
+        if(d.phishing_signals[k])
+            signals.innerHTML+=`<li>${k.replace(/_/g," ")}</li>`;
+
+    drawChart(d.confidence,d.risk);
 }
 
-function resetPage(){
-    document.getElementById("predictionView")?.style.setProperty("display","none");
-    document.getElementById("inputView")?.style.setProperty("display","block");
+function drawChart(score,risk){
+    if(chart) chart.destroy();
+    chart=new Chart(chartCanvas,{
+        type:"doughnut",
+        data:{datasets:[{
+            data:[score,100-score],
+            backgroundColor:[
+                risk==="Dangerous"?"#ef4444":"#10b981",
+                "rgba(255,255,255,.15)"
+            ],
+            borderWidth:0,
+            circumference:180,
+            rotation:270
+        }]},
+        options:{cutout:"85%",plugins:{legend:{display:false}}}
+    });
 }
 </script>
 

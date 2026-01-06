@@ -187,85 +187,100 @@ let riskChart = null;
 /* ========= UI TRANSLATIONS ========= */
 const UI_TRANSLATIONS = {
     hi: {
-        report: "विश्लेषण रिपोर्ट",
-        status: "स्थिति",
-        verdict: "निर्णय",
         clean: "सुरक्षित",
         malware: "मैलवेयर मिला",
-        explanation: "एआई विश्लेषण",
+        explanation: "एआई विश्लेषण पूरा हुआ"
     },
     ta: {
-        report: "ஆய்வு அறிக்கை",
-        status: "நிலை",
-        verdict: "தீர்ப்பு",
         clean: "பாதுகாப்பானது",
         malware: "மால்வேர் கண்டறியப்பட்டது",
-        explanation: "AI பகுப்பாய்வு",
+        explanation: "AI பகுப்பாய்வு முடிந்தது"
     },
     mni: {
-        report: "এনালাইসিস রিপোর্ট",
-        status: "স্টেটাস",
-        verdict: "ভেরডিক্ট",
         clean: "সেইফ",
         malware: "মালৱেয়ার ফাউন্দ অই",
-        explanation: "AI এক্সপ্লানেশন",
+        explanation: "AI এনালাইসিস ফিনিশ অই"
     }
 };
 /* ================================= */
 
 function updateFileName(){
-    const file=document.getElementById("fileInput").files[0];
-    document.getElementById("fileNameDisplay").innerText =
-        file ? file.name : "";
+    const fileInput = document.getElementById("fileInput");
+    const label = document.getElementById("fileNameDisplay");
+    if(fileInput && label && fileInput.files.length){
+        label.innerText = fileInput.files[0].name;
+    }
 }
 
 async function scanFile(){
-    const fileInput=document.getElementById("fileInput");
-    const language=document.getElementById("language").value;
-    const t = UI_TRANSLATIONS[language];
+    const fileInput = document.getElementById("fileInput");
+    const language = document.getElementById("language")?.value || "en";
+    const t = UI_TRANSLATIONS[language] || null;
 
-    if(!fileInput.files.length){
+    if(!fileInput || !fileInput.files.length){
         alert("Please upload a file");
         return;
     }
 
-    document.getElementById("inputView").style.display="none";
-    document.getElementById("predictionView").style.display="block";
+    document.getElementById("inputView")?.style.setProperty("display","none");
+    document.getElementById("predictionView")?.style.setProperty("display","block");
 
-    const formData=new FormData();
-    formData.append("file",fileInput.files[0]);
-    formData.append("language",language); // ✅ send language
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+    formData.append("language", language);
 
-    const res=await fetch("https://suraksha-ai-oue7.onrender.com/malware-scan",{
-        method:"POST",
-        body:formData
-    });
+    let data;
+    try {
+        const res = await fetch(
+            "https://suraksha-ai-oue7.onrender.com/malware-scan",
+            { method:"POST", body: formData }
+        );
 
-    const data=await res.json();
+        if(!res.ok) throw new Error("Backend error");
+        data = await res.json();
 
-    /* ===== Translate verdict ===== */
-    let verdictText = data.verdict;
-    if(t){
-        if(data.verdict==="Malware") verdictText=t.malware;
-        if(data.verdict==="Clean") verdictText=t.clean;
+    } catch (e) {
+        alert("Scan failed. Please try again.");
+        location.reload();
+        return;
     }
 
-    document.getElementById("statusText").innerText =
-        data.score > 70 ? "⚠" : "✔";
+    /* ===== Verdict Translation ===== */
+    let verdictText = data.verdict;
+    if(t){
+        if(data.verdict === "Malware") verdictText = t.malware;
+        if(data.verdict === "Clean") verdictText = t.clean;
+    }
 
-    document.getElementById("threatId").innerText = verdictText;
+    const statusText = document.getElementById("statusText");
+    if(statusText){
+        statusText.innerText = data.score > 70 ? "⚠" : "✔";
+    }
 
-    document.getElementById("explanationBox").innerText =
-        data.ai_explanation || (t ? t.explanation : "AI analysis complete.");
+    const threatId = document.getElementById("threatId");
+    if(threatId){
+        threatId.innerText = verdictText;
+    }
 
-    document.getElementById("detailsBox").innerHTML = `
-        <div class="detail-row"><span>Entropy</span><span>${data.entropy}</span></div>
-        <div class="detail-row"><span>Suspicious APIs</span><span>${data.suspicious_apis}</span></div>
-        <div class="detail-row"><span>Heuristic Score</span><span>${data.score}%</span></div>
-    `;
+    const explanationBox = document.getElementById("explanationBox");
+    if(explanationBox){
+        explanationBox.innerText =
+            data.ai_explanation || (t ? t.explanation : "AI analysis complete.");
+    }
 
-    document.getElementById("rawOutput").innerText =
-        JSON.stringify(data,null,2);
+    const detailsBox = document.getElementById("detailsBox");
+    if(detailsBox){
+        detailsBox.innerHTML = `
+            <div class="detail-row"><span>Entropy</span><span>${data.entropy}</span></div>
+            <div class="detail-row"><span>Suspicious APIs</span><span>${data.suspicious_apis}</span></div>
+            <div class="detail-row"><span>Heuristic Score</span><span>${data.score}%</span></div>
+        `;
+    }
+
+    const rawOutput = document.getElementById("rawOutput");
+    if(rawOutput){
+        rawOutput.innerText = JSON.stringify(data,null,2);
+    }
 
     setTimeout(()=>{
         renderChart(Number(data.score), data.verdict);
@@ -273,13 +288,15 @@ async function scanFile(){
 }
 
 function renderChart(score, verdict){
-    const ctx=document.getElementById("riskChart").getContext("2d");
+    const canvas = document.getElementById("riskChart");
+    if(!canvas) return;
 
-    let color = verdict==="Malware" ? "#ef4444" : "#10b981";
+    const ctx = canvas.getContext("2d");
+    const color = verdict==="Malware" ? "#ef4444" : "#10b981";
 
     if(riskChart) riskChart.destroy();
 
-    riskChart=new Chart(ctx,{
+    riskChart = new Chart(ctx,{
         type:"doughnut",
         data:{
             datasets:[{
@@ -300,9 +317,11 @@ function renderChart(score, verdict){
 }
 
 function resetPage(){
-    document.getElementById("predictionView").style.display="none";
-    document.getElementById("inputView").style.display="block";
+    document.getElementById("predictionView")?.style.setProperty("display","none");
+    document.getElementById("inputView")?.style.setProperty("display","block");
 }
 </script>
+
 </body>
 </html>
+

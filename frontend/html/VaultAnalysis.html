@@ -4,17 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vault Analysis | Suraksha.AI</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root {
     --primary:#0ea5e9;
     --primary-hover:#0284c7;
-    --bg-dark:#020617;
     --card-bg:rgba(255,255,255,0.03);
     --border:rgba(255,255,255,0.1);
-    --text-main:#ffffff;
-    --text-dim:#d9e6f9;
     --success:#10b981;
     --danger:#ef4444;
 }
@@ -24,8 +22,8 @@ body{
     min-height:100vh;
     font-family:Inter,sans-serif;
     background:
-        linear-gradient(rgba(3, 8, 18, 0.85), rgba(3, 8, 18, 0.40)),
-        url("../assets/vault.png") no-repeat center center/cover;
+        linear-gradient(rgba(3,8,18,0.85),rgba(3,8,18,0.4)),
+        url("../assets/vault.png") no-repeat center/cover;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -40,88 +38,68 @@ body{
     border:1px solid var(--border);
     border-radius:28px;
     backdrop-filter:blur(15px);
-    box-shadow:0 25px 50px rgba(0,0,0,0.5);
 }
 
 #inputView{display:block;}
 #resultView{display:none;}
 
 h2{text-align:center;color:var(--primary);}
-.subtitle{text-align:center;color:white;font-size:0.9rem;margin-bottom:20px;}
-
-select{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:15px;
-    background:rgba(0,0,0,0.4);
-    border:1px solid var(--border);
-    color:white;
-}
+.subtitle{text-align:center;font-size:0.9rem;margin-bottom:25px;}
 
 .upload-box{
     border:2px dashed var(--border);
-    padding:20px;
+    padding:25px;
     border-radius:16px;
     text-align:center;
     cursor:pointer;
     background:rgba(0,0,0,0.25);
-    transition:0.3s;
 }
 
-.upload-box:hover{
-    border-color:var(--primary);
-}
-
+.upload-box:hover{border-color:var(--primary);}
 input[type=file]{display:none;}
 
 .file-name{
-    margin-top:12px;
+    margin-top:10px;
     font-size:0.85rem;
     color:var(--primary);
     font-weight:600;
 }
 
-.btn-group{
-    margin-top:25px;
-    display:flex;
-    gap:10px;
-}
-
-.btn{
-    flex:1;
-    padding:14px;
-    border-radius:12px;
-    border:none;
-    font-weight:600;
-    cursor:pointer;
-    transition:0.3s;
-}
-
-.btn.analyze{
-    background:var(--primary);
-    color:white;
-}
-.btn.analyze:hover{background:var(--primary-hover);transform:translateY(-2px);}
-
-.btn.cancel{
-    background:transparent;
+select{
+    width:100%;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+    background:rgba(0,0,0,0.3);
     border:1px solid var(--border);
     color:white;
 }
+
+.btn{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    background:var(--primary);
+    border:none;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.btn:hover{background:var(--primary-hover);}
 
 .chart-wrap{
     height:180px;
     display:flex;
     justify-content:center;
     align-items:center;
-    margin-bottom:20px;
 }
 
 .stat{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:12px;
+    margin-top:15px;
 }
 
 .card{
@@ -130,16 +108,8 @@ input[type=file]{display:none;}
     border-radius:10px;
 }
 
-.label{
-    font-size:0.7rem;
-    color:white;
-    text-transform:uppercase;
-}
-
-.value{
-    font-weight:bold;
-    margin-top:5px;
-}
+.label{font-size:0.7rem;opacity:0.8;}
+.value{font-weight:bold;margin-top:5px;}
 
 .explain{
     margin-top:15px;
@@ -154,15 +124,11 @@ input[type=file]{display:none;}
 </head>
 
 <body>
-
 <div class="container">
 
-<!-- INPUT -->
 <div id="inputView">
     <h2>Vault Analysis</h2>
     <p class="subtitle">ML-powered vault risk & integrity assessment</p>
-
-   
 
     <div class="upload-box" onclick="document.getElementById('vaultFile').click()">
         Click to upload vault file
@@ -177,13 +143,9 @@ input[type=file]{display:none;}
         <option value="mni">Manipuri</option>
     </select>
 
-    <div class="btn-group">
-        <button class="btn analyze" onclick="analyzeVault()">Analyze Vault</button>
-        <button class="btn cancel" onclick="resetAll()">Cancel</button>
-    </div>
+    <button class="btn" onclick="analyzeVault()">Analyze Vault</button>
 </div>
 
-<!-- RESULT -->
 <div id="resultView">
     <h3 style="text-align:center;color:#facc15">Vault Analysis Report</h3>
 
@@ -203,10 +165,10 @@ input[type=file]{display:none;}
     </div>
 
     <div class="explain" id="geminiExplain">
-        Generating AI explanation...
+        Generating AI explanation…
     </div>
 
-    <button class="btn cancel" style="margin-top:20px" onclick="resetAll()">← Analyze Another File</button>
+    <button class="btn" onclick="resetAll()">← Analyze Another</button>
 </div>
 
 </div>
@@ -214,9 +176,16 @@ input[type=file]{display:none;}
 <script>
 let chart=null;
 
+/* 🔥 AUTO BACKEND URL (RENDER SAFE) */
+const BACKEND_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:5000"
+    : "https://suraksha-ai-oue7.onrender.com";
+
 function showFile(){
     const f=document.getElementById("vaultFile").files[0];
-    document.getElementById("fileName").innerText=f?"Selected: "+f.name:"";
+    document.getElementById("fileName").innerText=f?`Selected: ${f.name}`:"";
 }
 
 async function analyzeVault(){
@@ -224,61 +193,51 @@ async function analyzeVault(){
     const lang=document.getElementById("lang").value;
 
     if(!input.files.length){
-        alert("Please upload a file");
+        alert("Upload a file");
         return;
     }
 
-    document.getElementById("inputView").style.display="none";
-    document.getElementById("resultView").style.display="block";
+    inputView.style.display="none";
+    resultView.style.display="block";
 
     const formData=new FormData();
     formData.append("file",input.files[0]);
+    formData.append("language",lang);
 
     try{
-        const res = await fetch("https://suraksha-ai-oue7.onrender.com/vault-analyze", {
-
+        const res=await fetch(`${BACKEND_URL}/vault-analyze`,{
             method:"POST",
             body:formData
         });
 
         const data=await res.json();
 
-        let explanation=data.gemini_explanation || "No explanation returned.";
-
-        // 🌍 TRANSLATION LOGIC
-        if(lang!=="en"){
-            const tr=await fetch(
-                `https://api.mymemory.translated.net/get?q=${encodeURIComponent(explanation)}&langpair=en|${lang}`
-            );
-            const trData=await tr.json();
-            explanation=trData.responseData.translatedText || explanation;
-        }
-
         document.getElementById("riskScore").innerText=data.risk_score+"%";
         document.getElementById("verdict").innerText=data.verdict;
-        document.getElementById("geminiExplain").innerHTML=
-            `<b>Gemini AI Insight</b><br>${explanation}`;
 
-        drawChart(data.risk_score, data.verdict==="Malicious");
+        document.getElementById("geminiExplain").innerHTML =
+            `<b>Gemini AI Insight</b><br>${data.gemini_explanation || "Explanation unavailable"}`;
 
-    }catch(err){
+        setTimeout(()=>drawChart(data.risk_score),100);
+
+    }catch(e){
         document.getElementById("geminiExplain").innerText="Error analyzing vault.";
     }
 }
 
-function drawChart(score,danger){
-    const ctx=document.getElementById("riskChart").getContext("2d");
+function drawChart(score){
     if(chart) chart.destroy();
 
-    chart=new Chart(ctx,{
+    let color="#10b981";
+    if(score>=40) color="#facc15";
+    if(score>=70) color="#ef4444";
+
+    chart=new Chart(document.getElementById("riskChart"),{
         type:"doughnut",
         data:{
             datasets:[{
                 data:[score,100-score],
-                backgroundColor:[
-                    danger?"#ef4444":"#10b981",
-                    "rgba(255,255,255,0.12)"
-                ],
+                backgroundColor:[color,"rgba(255,255,255,0.12)"],
                 borderWidth:0,
                 circumference:180,
                 rotation:270
@@ -286,19 +245,18 @@ function drawChart(score,danger){
         },
         options:{
             cutout:"85%",
-            plugins:{legend:{display:false},tooltip:{enabled:false}}
+            plugins:{legend:{display:false}}
         }
     });
 }
 
 function resetAll(){
-    document.getElementById("vaultFile").value="";
-    document.getElementById("fileName").innerText="";
-    document.getElementById("inputView").style.display="block";
-    document.getElementById("resultView").style.display="none";
+    vaultFile.value="";
+    fileName.innerText="";
+    inputView.style.display="block";
+    resultView.style.display="none";
 }
 </script>
 
 </body>
 </html>
-

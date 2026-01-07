@@ -212,13 +212,21 @@ async function analyzeVault(){
 
         const data=await res.json();
 
-        document.getElementById("riskScore").innerText=data.risk_score+"%";
-        document.getElementById("verdict").innerText=data.verdict;
+        const entropy = data.entropy;
 
-        document.getElementById("geminiExplain").innerHTML =
-            `<b>Gemini AI Insight</b><br>${data.gemini_explanation || "Explanation unavailable"}`;
+// Convert entropy → risk score
+let riskScore = 20;
+if (entropy > 6.8) riskScore = 55;
+if (entropy > 7.5) riskScore = 85;
 
-        setTimeout(()=>drawChart(data.risk_score),100);
+document.getElementById("riskScore").innerText = riskScore + "%";
+document.getElementById("verdict").innerText = data.verdict;
+
+document.getElementById("geminiExplain").innerHTML =
+    `<b>Gemini AI Insight</b><br>${data.gemini_explanation || "Explanation unavailable"}`;
+
+setTimeout(() => drawChart(riskScore), 100);
+
 
     }catch(e){
         document.getElementById("geminiExplain").innerText="Error analyzing vault.";
@@ -260,4 +268,5 @@ function resetAll(){
 
 </body>
 </html>
+
 

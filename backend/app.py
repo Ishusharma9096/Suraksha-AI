@@ -1,38 +1,39 @@
-import os
-import re
-import pickle
-import math
+import os, re, pickle, math, time
 from collections import Counter
 from datetime import datetime
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from google import genai
 
-# ----------------- Flask App -----------------
+# ================= FLASK =================
 app = Flask(__name__)
 CORS(app)
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
-# ----------------- Gemini -----------------
+# ================= GEMINI =================
 GENAI_API_KEY = os.getenv("GENAI_API_KEY")
-if not GENAI_API_KEY:
-    raise RuntimeError("GENAI_API_KEY not set")
+client = genai.Client(api_key=GENAI_API_KEY) if GENAI_API_KEY else None
+GEMINI_MODEL = "models/gemini-2.5-flash"
 
-client = genai.Client(api_key=GENAI_API_KEY)
+LAST_GEMINI_CALL = 0
+GEMINI_COOLDOWN = 5   # 👈 reduced for judge demo
 
-# Pick a model
-GEMINI_MODEL = "models/gemini-1.5-flash"
+def gemini_allowed():
+    global LAST_GEMINI_CALL
+    now = time.time()
+    if not client:
+        return False
+    if now - LAST_GEMINI_CALL < GEMINI_COOLDOWN:
+        return False
+    LAST_GEMINI_CALL = now
+    return True
 
-# ----------------- Load ML Model -----------------
+# ================= ML =================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model = pickle.load(open(os.path.join(BASE_DIR, "model.pkl"), "rb"))
+vectorizer = pickle.load(open(os.path.join(BASE_DIR, "vectorizer.pkl"), "rb"))
 
-with open(os.path.join(BASE_DIR, "model.pkl"), "rb") as f:
-    model = pickle.load(f)
-
-with open(os.path.join(BASE_DIR, "vectorizer.pkl"), "rb") as f:
-    vectorizer = pickle.load(f)
-
-# ----------------- Language Map -----------------
+# ================= LANGUAGE =================
 LANGUAGE_MAP = {
     "en": "English",
     "hi": "Hindi",
@@ -40,147 +41,141 @@ LANGUAGE_MAP = {
     "mni": "Manipuri"
 }
 
-# ----------------- Helpers -----------------
-def calculate_entropy(data):
+SAFE_TEXT = {
+    "en": "No immediate security threat detected.",
+    "hi": "कोई तात्कालिक सुरक्षा खतरा नहीं मिला।",
+    "ta": "உடனடி பாதுகாப்பு ஆபத்து இல்லை.",
+    "mni": "Immediate security threat ama leitre."
+}
+
+# ================= HELPERS =================
+def gemini_generate(prompt):
+    if not gemini_allowed():
+        return None
+    try:
+        res = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt
+        )
+        return res.text.strip()
+    except:
+        return None
+
+# ================= ENTROPY =================
+def calculate_entropy(data: bytes) -> float:
     if not data:
         return 0
-    freq = Counter(data)
-    entropy = 0
-    for c in freq.values():
-        p = c / len(data)
-        entropy -= p * math.log2(p)
-    return round(entropy, 2)
+    counts = Counter(data)
+    total = len(data)
+    return -sum((c/total) * math.log2(c/total) for c in counts.values())
 
-# ----------------- Gemini Explain -----------------
-def gemini_explain(prompt, language):
-    try:
-        lang = LANGUAGE_MAP.get(language, "English")
-        final_prompt = f"""
-Respond ONLY in {lang}.
-Keep it short (2–3 lines).
-Do not mention AI or models.
+# ================= MALWARE =================
+SUSPICIOUS_EXT = {".exe",".dll",".js",".bat",".cmd",".ps1",".vbs",".jar"}
+SIGNATURES = [b"powershell -enc", b"cmd.exe /c", b"CreateRemoteThread", b"/bin/bash"]
+
+def malware_scan(data: bytes, filename: str):
+    score, findings = 0, []
+    ext = os.path.splitext(filename.lower())[1]
+
+    if ext in SUSPICIOUS_EXT:
+        score += 30
+        findings.append(f"Suspicious extension {ext}")
+
+    for sig in SIGNATURES:
+        if sig in data:
+            score += 40
+            findings.append("Malicious signature detected")
+
+    verdict = "Malicious" if score >= 70 else "Suspicious" if score >= 40 else "Clean"
+    return verdict, score, findings
+
+# ================= GEMINI EXPLANATIONS =================
+def explain(prompt, lang):
+    full_prompt = f"""
+Reply ONLY in {LANGUAGE_MAP.get(lang,"English")}.
+Max 2 lines.
 
 {prompt}
 """
-        res = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=final_prompt
-        )
-        return res.text.strip()
-    except Exception:
-        return "Explanation unavailable."
+    return gemini_generate(full_prompt) or SAFE_TEXT.get(lang, SAFE_TEXT["en"])
 
-# ----------------- Routes -----------------
+# ================= ROUTES =================
 @app.route("/")
 def home():
     return "✅ SurakshaAI backend running"
 
-# ================= PHISHING =================
+# -------- PHISHING --------
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    data = request.get_json()
-    message = data.get("message", "").strip()
-    language = data.get("language", "en")
+    d = request.get_json()
+    msg = d.get("message","")
+    lang = d.get("language","en")
 
-    if not message:
-        return jsonify({"error": "Message required"}), 400
+    X = vectorizer.transform([msg])
+    ml = model.predict(X)[0]
 
-    text = message.lower()
+    verdict = "Dangerous" if ml=="Dangerous" else "Suspicious" if ml=="Suspicious" else "Safe"
+    conf = 90 if verdict=="Dangerous" else 65 if verdict=="Suspicious" else 30
 
-    signals = {
-        "suspicious_link": bool(re.search(r"https?://", text)),
-        "email_address_present": bool(re.search(r"@", text)),
-        "urgent_language": any(w in text for w in ["urgent", "verify", "immediately"]),
-        "impersonation": any(w in text for w in ["bank", "paypal", "amazon", "government"]),
-        "credential_request": any(w in text for w in ["otp", "password", "login"])
-    }
-
-    score = sum(signals.values())
-    X = vectorizer.transform([message])
-    ml_pred = model.predict(X)[0]
-
-    if ml_pred == "Dangerous":
-        score += 3
-    elif ml_pred == "Suspicious":
-        score += 1
-
-    if score >= 4:
-        risk = "Dangerous"
-        confidence = 90
-    elif score >= 2:
-        risk = "Suspicious"
-        confidence = 65
-    else:
-        risk = "Safe"
-        confidence = 30
-
-    explanation = gemini_explain(
-        f"""
-Message: {message}
-Verdict: {risk}
-Confidence: {confidence}%
-Indicators: {', '.join(k for k,v in signals.items() if v)}
-""",
-        language
+    explanation = explain(
+        f"Message: {msg}\nVerdict: {verdict}\nConfidence: {conf}%",
+        lang
     )
 
     return jsonify({
-        "risk": risk,
-        "confidence": confidence,
-        "phishing_signals": signals,
-        "ai_explanation": explanation,
-        "recommended_action":
-            "Do not click links or respond." if risk == "Dangerous"
-            else "Verify sender before responding.",
-        "scan_metadata": {
-            "scan_id": f"PHISH-{os.urandom(4).hex().upper()}",
-            "engine": "Suraksha-Phish-ML",
-            "timestamp_utc": datetime.utcnow().isoformat()+"Z"
-        }
+        "risk": verdict,
+        "confidence": conf,
+        "ai_explanation": explanation
     })
 
-# ================= FILE / MALWARE =================
-@app.route("/scan-file", methods=["POST"])
-def scan_file():
-    file = request.files.get("file")
-    language = request.form.get("language", "en")
+# -------- VAULT --------
+@app.route("/vault-analyze", methods=["POST"])
+def vault():
+    file = request.files["file"]
+    lang = request.form.get("language","en")
 
-    if not file:
-        return jsonify({"error": "No file"}), 400
+    data = file.read(4096)
+    entropy = round(calculate_entropy(data),2)
 
-    data = file.read()
-    entropy = calculate_entropy(data)
+    verdict = "Malicious" if entropy > 7.5 else "Suspicious" if entropy > 6.8 else "Safe"
 
-    if entropy > 7.6:
-        score, verdict = 90, "Malware"
-    elif entropy > 6.8:
-        score, verdict = 60, "Suspicious"
-    else:
-        score, verdict = 20, "Clean"
-
-    explanation = gemini_explain(
-        f"""
-File entropy: {entropy}
-Verdict: {verdict}
-Risk score: {score}%
-""",
-        language
+    explanation = explain(
+        f"File: {file.filename}\nEntropy: {entropy}\nVerdict: {verdict}",
+        lang
     )
 
     return jsonify({
         "file_name": file.filename,
         "entropy": entropy,
-        "score": score,
         "verdict": verdict,
-        "ai_explanation": explanation,
-        "scan_metadata": {
-            "scan_id": f"MAL-{os.urandom(4).hex().upper()}",
-            "engine": "Suraksha-Malware",
-            "timestamp_utc": datetime.utcnow().isoformat()+"Z"
+        "gemini_explanation": explanation
+    })
+
+# -------- MALWARE --------
+@app.route("/malware-scan", methods=["POST"])
+def malware_scan_api():
+    file = request.files["file"]
+    lang = request.form.get("language","en")
+
+    data = file.read()
+    verdict, score, findings = malware_scan(data, file.filename)
+
+    explanation = explain(
+        f"File: {file.filename}\nVerdict: {verdict}\nFindings: {findings}",
+        lang
+    )
+
+    return jsonify({
+        "file_name": file.filename,
+        "risk_score": min(score+10,100),
+        "verdict": verdict,
+        "gemini_explanation": explanation,
+        "malware_scan": {
+            "score": score,
+            "findings": findings
         }
     })
 
-# ----------------- Run -----------------
+# ================= RUN =================
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
-
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

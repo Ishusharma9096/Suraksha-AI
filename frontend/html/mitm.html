@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MITM Attack | Suraksha AI</title>
+
+<style>
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#020617,#000);
+  color:#e5e7eb;
+  font-family:'Segoe UI',sans-serif;
+}
+
+section{padding:70px 8%}
+
+h1{text-align:center;font-size:44px}
+h1 span{color:#22d3ee}
+
+.subtitle{
+  text-align:center;
+  color:#94a3b8;
+  max-width:900px;
+  margin:20px auto 60px;
+  font-size:18px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:28px;
+}
+
+.card{
+  background:linear-gradient(145deg,#020617,#0f172a);
+  padding:28px;
+  border-radius:20px;
+  box-shadow:0 0 30px rgba(34,211,238,.12);
+}
+
+.flow{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:20px;
+}
+
+.flow div{
+  background:rgba(255,255,255,.06);
+  padding:20px;
+  border-radius:16px;
+  width:210px;
+  text-align:center;
+  border:1px solid rgba(34,211,238,.25);
+}
+
+button{
+  padding:12px 24px;
+  background:#22d3ee;
+  border:none;
+  border-radius:25px;
+  font-size:16px;
+  cursor:pointer;
+  margin:10px;
+}
+
+.back{
+  display:inline-block;
+  margin-top:50px;
+  color:#38bdf8;
+  text-decoration:none;
+  font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<section>
+<h1>Man‑in‑the‑<span>Middle</span> Attack</h1>
+<p class="subtitle">
+A Man‑in‑the‑Middle (MITM) attack happens when a hacker secretly sits between
+two communicating parties and steals or alters their data.
+</p>
+</section>
+
+<!-- SIMPLE EXPLANATION -->
+<section>
+<h1>MITM in <span>Simple Words</span></h1>
+
+<div class="grid">
+<div class="card">📡 You think you're talking to a website</div>
+<div class="card">🕵️ Hacker secretly listens in between</div>
+<div class="card">🔓 Passwords & OTPs get stolen</div>
+</div>
+</section>
+
+<!-- TYPES -->
+<section>
+<h1>Common <span>MITM</span> Types</h1>
+
+<div class="grid">
+<div class="card">📶 Wi‑Fi Eavesdropping</div>
+<div class="card">🍪 Session Hijacking</div>
+<div class="card">🔐 SSL Stripping</div>
+</div>
+</section>
+
+<!-- ATTACK FLOW -->
+<section>
+<h1>How an <span>MITM</span> Attack Happens</h1>
+
+<div class="flow">
+<div>📱 User Connects to Network</div>
+<div>📡 Fake Wi‑Fi / Router Setup</div>
+<div>🕵️ Data Intercepted</div>
+<div>🔓 Credentials Stolen</div>
+<div>💸 Financial or Data Loss</div>
+</div>
+</section>
+
+<!-- REAL EXAMPLES -->
+<section>
+<h1>Real‑World <span>Examples</span></h1>
+
+<div class="grid">
+<div class="card">Public Wi‑Fi at airports & cafes</div>
+<div class="card">OTP interception during payments</div>
+<div class="card">Fake hotspots in crowded places</div>
+</div>
+</section>
+
+<!-- PREVENTION -->
+<section>
+<h1>How to <span>Prevent</span> MITM Attacks</h1>
+
+<div class="grid">
+<div class="card">Avoid public Wi‑Fi for payments</div>
+<div class="card">Always check HTTPS & lock icon</div>
+<div class="card">Use VPN on unsecured networks</div>
+</div>
+</section>
+
+<!-- CITIZEN -->
+<section>
+<h1>What <span>Citizens</span> Should Do</h1>
+
+<div class="grid">
+<div class="card">Never enter passwords on free Wi‑Fi</div>
+<div class="card">Disable auto‑connect to networks</div>
+<div class="card">Report suspicious Wi‑Fi hotspots</div>
+</div>
+</section>
+
+<!-- VOICE AWARENESS -->
+<section>
+<h1>Voice‑Guided <span>Awareness</span></h1>
+
+<div style="text-align:center">
+<button onclick="playMITM()">▶ Play Awareness</button>
+<button onclick="stopMITM()">⏹ Stop</button>
+</div>
+
+<p class="subtitle">
+Audio explanation for students, citizens, and non‑technical users.
+</p>
+</section>
+
+<a href="CyberAwareness.html" class="back">← Back to Awareness</a>
+
+<script>
+let mitmVoice;
+
+function playMITM(){
+  mitmVoice = new SpeechSynthesisUtterance(
+    "A Man in the Middle attack occurs when a hacker secretly intercepts communication " +
+    "between a user and a website. This often happens on public Wi Fi networks. " +
+    "Hackers can steal passwords, OTPs, and banking details. " +
+    "Citizens should avoid public Wi Fi for sensitive activities and use secure connections."
+  );
+  mitmVoice.rate = 0.95;
+  mitmVoice.pitch = 1;
+  speechSynthesis.speak(mitmVoice);
+}
+
+function stopMITM(){
+  speechSynthesis.cancel();
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cyber Awareness | Suraksha AI</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+section {
+  padding: 60px 8%;
+}
+
+h1 {
+  text-align: center;
+  font-size: 42px;
+}
+h1 span { color: #22d3ee; }
+
+.subtitle {
+  text-align: center;
+  color: #94a3b8;
+  max-width: 800px;
+  margin: 15px auto 50px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+  gap: 25px;
+}
+
+.card {
+  background: rgba(15,23,42,.95);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 0 25px rgba(34,211,238,.08);
+  transition: .3s;
+  text-decoration: none;
+  color: inherit;
+}
+.card:hover { transform: translateY(-6px); }
+
+.badge {
+  float: right;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+.high { background:#78350f;color:#fbbf24;}
+.medium { background:#365314;color:#fde047;}
+.critical { background:#7f1d1d;color:#f87171;}
+
+#indiaMap {
+  height: 480px;
+  border-radius: 20px;
+  box-shadow: 0 0 35px rgba(34,211,238,.25);
+}
+
+.map-info {
+  max-width: 900px;
+  margin: 60px auto;
+  background: rgba(255,255,255,0.04);
+  padding: 35px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.map-info h2 { color:#38bdf8; }
+.map-info p { color:#cbd5e1; line-height:1.7; }
+</style>
+</head>
+
+<body>
+
+<!-- INTRO -->
+<section>
+  <h1>Cyber <span>Awareness</span></h1>
+  <p class="subtitle">
+    Suraksha AI spreads cyber awareness using real-time intelligence, visuals,
+    and simple explanations for every citizen.
+  </p>
+</section>
+
+<!-- LIVE STATS -->
+<section>
+  <h1>Live <span>Cyber Activity</span></h1>
+  <p class="subtitle">AI-powered real-time cyber threat simulation.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Total Threats Detected</h3>
+      <h1 id="threatCount" style="color:#22d3ee">0</h1>
+    </div>
+
+    <div class="card">
+      <h3>Threat Level</h3>
+      <h1 id="threatLevel" style="color:#f87171">LOW</h1>
+    </div>
+
+    <div class="card">
+      <h3>Latest Attack</h3>
+      <h1 id="attackType" style="color:#facc15">Scanning...</h1>
+    </div>
+  </div>
+</section>
+
+<!-- ATTACK VECTORS -->
+<section>
+  <h1>Common <span>Attack Vectors</span></h1>
+  <p class="subtitle">Click on any attack to learn more.</p>
+
+  <div class="grid">
+    <a href="phishing.html" class="card">
+      <span class="badge high">HIGH</span>
+      <h3>Phishing</h3>
+      <p>Fake emails, SMS or websites.</p>
+    </a>
+
+    <a href="ransomware.html" class="card">
+      <span class="badge critical">CRITICAL</span>
+      <h3>Ransomware</h3>
+      <p>Files locked for money.</p>
+    </a>
+
+    <a href="ddos.html" class="card">
+      <span class="badge medium">MEDIUM</span>
+      <h3>DDoS</h3>
+      <p>Website shutdown attacks.</p>
+    </a>
+
+    <a href="sql.html" class="card">
+      <span class="badge high">HIGH</span>
+      <h3>SQL Injection</h3>
+      <p>Database hacking.</p>
+    </a>
+
+    <a href="mitm.html" class="card">
+      <span class="badge medium">MEDIUM</span>
+      <h3>Man-in-the-Middle</h3>
+      <p>Data interception.</p>
+    </a>
+
+    <a href="zeroday.html" class="card">
+      <span class="badge critical">CRITICAL</span>
+      <h3>Zero-Day</h3>
+      <p>Unknown vulnerabilities.</p>
+    </a>
+  </div>
+</section>
+
+<!-- MAP -->
+<section>
+  <h1>India <span>Cyber Threat Map</span></h1>
+  <p class="subtitle">Live cyber attack visualization across India.</p>
+  <div id="indiaMap"></div>
+</section>
+
+<section class="map-info">
+  <h2>🔍 Map Explanation</h2>
+  <p>Each dot shows a cyber threat detected by Suraksha AI.</p>
+  <p>🟢 Low | 🟡 Medium | 🔴 High | 🟣 Critical</p>
+</section>
+
+<!-- MAP SCRIPT -->
+<script>
+const map = L.map('indiaMap').setView([22.97,78.65],5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+function color(l){
+  return l==="Low"?"#22c55e":l==="Medium"?"#facc15":l==="High"?"#ef4444":"#a855f7";
+}
+
+setInterval(()=>{
+  const cities=[[28.6,77.2,"Delhi"],[19,72.8,"Mumbai"],[12.9,77.6,"Bengaluru"]];
+  const levels=["Low","Medium","High","Critical"];
+  const c=cities[Math.floor(Math.random()*cities.length)];
+  const l=levels[Math.floor(Math.random()*levels.length)];
+  const m=L.circleMarker([c[0],c[1]],{
+    radius:10,color:color(l),fillColor:color(l),fillOpacity:.8
+  }).addTo(map).bindPopup(`<b>${c[2]}</b><br>${l}`);
+  setTimeout(()=>map.removeLayer(m),7000);
+},1000);
+</script>
+
+<!-- LIVE UI -->
+<script>
+let count=15000;
+const levels=["LOW","MEDIUM","HIGH","CRITICAL"];
+const attacks=["Phishing","UPI Fraud","Malware","Ransomware","Credential Theft"];
+
+setInterval(()=>{
+  count+=Math.floor(Math.random()*10);
+  threatCount.innerText=count;
+  threatLevel.innerText=levels[Math.floor(Math.random()*levels.length)];
+  attackType.innerText=attacks[Math.floor(Math.random()*attacks.length)];
+},3000);
+</script>
+
+</body>
+</html>

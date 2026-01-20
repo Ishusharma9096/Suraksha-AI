@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ransomware Attacks | Suraksha AI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:radial-gradient(circle at top,#020617,#000);
+  color:#e5e7eb;
+}
+
+section{padding:60px 8%;}
+
+h1{text-align:center;font-size:42px;}
+h1 span{color:#22d3ee;}
+
+.subtitle{
+  text-align:center;
+  max-width:900px;
+  margin:15px auto 50px;
+  color:#94a3b8;
+  font-size:18px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:25px;
+}
+
+.card{
+  background:linear-gradient(145deg,#020617,#0f172a);
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 0 30px rgba(34,211,238,.12);
+}
+
+.flow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  justify-content:center;
+}
+
+.flow div{
+  background:rgba(255,255,255,.05);
+  padding:20px;
+  border-radius:16px;
+  text-align:center;
+  width:180px;
+  border:1px solid rgba(34,211,238,.25);
+}
+
+.chart-box{
+  background:rgba(255,255,255,.04);
+  padding:25px;
+  border-radius:20px;
+}
+
+button{
+  padding:12px 20px;
+  border:none;
+  border-radius:30px;
+  background:#22d3ee;
+  color:#020617;
+  font-size:16px;
+  cursor:pointer;
+  margin:10px;
+}
+
+button:hover{opacity:.9}
+
+.back{
+  display:inline-block;
+  margin-top:50px;
+  color:#38bdf8;
+  text-decoration:none;
+  font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- INTRO -->
+<section>
+<h1><span>Ransomware</span> Attacks</h1>
+<p class="subtitle">
+Ransomware is a cyber attack where malicious software encrypts files or locks
+systems and demands money (ransom) to restore access.
+</p>
+</section>
+
+<!-- SIMPLE EXPLANATION -->
+<section>
+<h1>Ransomware in <span>Simple Words</span></h1>
+
+<div class="grid">
+<div class="card">🔒 Hacker locks your computer like a locker</div>
+<div class="card">💰 Demands money to unlock your files</div>
+<div class="card">❌ Even after payment, files may not return</div>
+</div>
+</section>
+
+<!-- TYPES -->
+<section>
+<h1>Types of <span>Ransomware</span></h1>
+
+<div class="grid">
+
+<div class="card">
+<h3>Crypto Ransomware</h3>
+<p>Encrypts files and demands payment.</p>
+<p><b>Example:</b> WannaCry</p>
+</div>
+
+<div class="card">
+<h3>Locker Ransomware</h3>
+<p>Locks the entire system screen.</p>
+</div>
+
+<div class="card">
+<h3>Scareware</h3>
+<p>Fake virus alerts to scare users.</p>
+</div>
+
+<div class="card">
+<h3>Double Extortion</h3>
+<p>Data stolen before encryption.</p>
+</div>
+
+<div class="card">
+<h3>RaaS</h3>
+<p>Ransomware sold as a service.</p>
+</div>
+
+<div class="card">
+<h3>Mobile Ransomware</h3>
+<p>Targets Android devices.</p>
+</div>
+
+</div>
+</section>
+
+<!-- INFECTION FLOW -->
+<section>
+<h1>Ransomware <span>Infection Flow</span></h1>
+
+<div class="flow">
+<div>📧 Phishing Email</div>
+<div>📎 Malicious Attachment</div>
+<div>⚙ Execution</div>
+<div>🔐 File Encryption</div>
+<div>💰 Ransom Demand</div>
+</div>
+</section>
+
+<!-- STATS -->
+<section>
+<h1>Ransomware <span>Statistics (India)</span></h1>
+
+<div class="grid">
+
+<div class="chart-box">
+<canvas id="attackChart"></canvas>
+</div>
+
+<div class="chart-box">
+<canvas id="sectorChart"></canvas>
+</div>
+
+</div>
+</section>
+
+<!-- IMPACT -->
+<section>
+<h1>Impact of <span>Ransomware</span></h1>
+
+<div class="grid">
+<div class="card">Business downtime</div>
+<div class="card">Huge financial loss</div>
+<div class="card">Sensitive data leaks</div>
+<div class="card">Loss of public trust</div>
+<div class="card">Legal & compliance penalties</div>
+</div>
+</section>
+
+<!-- CITIZEN ACTION -->
+<section>
+<h1>What <span>Citizens</span> Should Do</h1>
+
+<div class="grid">
+<div class="card">❌ Never pay ransom</div>
+<div class="card">🔌 Disconnect infected system immediately</div>
+<div class="card">🛡 Report to cybercrime.gov.in</div>
+<div class="card">💾 Maintain offline backups</div>
+</div>
+</section>
+
+<!-- VOICE AWARENESS -->
+<section>
+<h1>Voice‑Guided <span>Awareness</span></h1>
+
+<div style="text-align:center">
+<button onclick="playRansomware()">▶ Play Awareness</button>
+<button onclick="stopRansomware()">⏹ Stop</button>
+</div>
+
+<p class="subtitle">
+Audio explanation for students, parents, and non‑technical users.
+</p>
+</section>
+
+<!-- PREVENTION -->
+<section>
+<h1>Prevention & <span>Response</span></h1>
+
+<div class="grid">
+<div class="card">Maintain offline backups</div>
+<div class="card">Avoid unknown attachments</div>
+<div class="card">Update OS & applications</div>
+<div class="card">Use endpoint security</div>
+<div class="card">Isolate infected systems</div>
+</div>
+
+<a href="CyberAwareness.html" class="back">← Back to Awareness</a>
+</section>
+
+<!-- CHARTS -->
+<!-- CHARTS -->
+<script>
+new Chart(attackChart,{
+type:"bar",
+data:{
+  labels:["2020","2021","2022","2023","2024","2025","2026"],
+  datasets:[{
+    label:"Ransomware Attacks in India",
+    data:[1200,2400,4100,6900,9200,11000,12500], // 2025 and 2026 added
+    backgroundColor:"#22d3ee"
+  }]
+},
+options:{
+  plugins:{legend:{labels:{color:"#e5e7eb"}}},
+  scales:{x:{ticks:{color:"#cbd5e1"}},y:{ticks:{color:"#cbd5e1"}}}
+}
+});
+
+new Chart(sectorChart,{
+type:"doughnut",
+data:{
+  labels:["Healthcare","IT","Banking","Education","Government"],
+  datasets:[{
+    data:[28,22,20,15,15], // you can update these for 2025/26 if needed
+    backgroundColor:["#ef4444","#facc15","#22c55e","#38bdf8","#a855f7"]
+  }]
+},
+options:{plugins:{legend:{labels:{color:"#e5e7eb"}}}}
+});
+</script>
+
+
+<!-- VOICE SCRIPT -->
+<script>
+let ransomVoice;
+
+function playRansomware(){
+  ransomVoice = new SpeechSynthesisUtterance(
+    "Ransomware is a cyber attack where hackers lock your files and demand money. " +
+    "It spreads mainly through phishing emails and malicious downloads. " +
+    "Citizens should never pay ransom, should keep backups, and must report incidents to cybercrime authorities. " +
+    "Always update your software and avoid suspicious links."
+  );
+  ransomVoice.rate = 0.95;
+  ransomVoice.pitch = 1;
+  speechSynthesis.speak(ransomVoice);
+}
+
+function stopRansomware(){
+  speechSynthesis.cancel();
+}
+</script>
+
+</body>
+</html>

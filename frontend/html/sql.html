@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SQL Injection Explained | Suraksha AI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#020617,#000);
+  color:#e5e7eb;
+  font-family:'Segoe UI',sans-serif;
+}
+
+section{padding:70px 8%}
+h1{text-align:center;font-size:44px}
+h1 span{color:#22d3ee}
+.subtitle{text-align:center;color:#94a3b8;max-width:950px;margin:20px auto 60px;font-size:18px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px}
+
+.card{
+  background:linear-gradient(145deg,#020617,#0f172a);
+  padding:28px;
+  border-radius:20px;
+  box-shadow:0 0 35px rgba(34,211,238,.12);
+}
+
+.flow{display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
+.flow div{
+  width:210px;
+  padding:20px;
+  background:rgba(255,255,255,.06);
+  border-radius:16px;
+  text-align:center;
+  border:1px solid rgba(34,211,238,.25)
+}
+
+#sqlBar{height:22px;background:#020617;border-radius:20px;overflow:hidden}
+#sqlFill{height:100%;width:15%;background:linear-gradient(90deg,#22d3ee,#ef4444);transition:.5s}
+
+.counter{text-align:center;font-size:42px;color:#22d3ee}
+
+.chart-box{
+  background:rgba(255,255,255,.05);
+  padding:30px;
+  border-radius:24px;
+}
+
+.back{display:inline-block;margin-top:50px;color:#38bdf8;text-decoration:none;font-size:18px}
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<section>
+<h1><span>SQL Injection</span> Attack</h1>
+<p class="subtitle">
+SQL Injection is one of the most dangerous web attacks where hackers manipulate
+database queries to <strong>steal data, bypass logins, or destroy entire databases</strong>.
+</p>
+</section>
+
+<!-- SIMPLE EXPLANATION -->
+<section>
+<h1>SQL Injection in <span>Simple Words</span></h1>
+<div class="grid">
+<div class="card">🧾 Website asks database a question</div>
+<div class="card">💉 Attacker adds malicious SQL code</div>
+<div class="card">🔓 Database replies with sensitive data</div>
+</div>
+</section>
+
+<!-- LOGIN BYPASS -->
+<section>
+<h1>How <span>Login Bypass</span> Happens</h1>
+
+<div class="grid">
+<div class="card">
+<h3>Normal Login Query</h3>
+<p><code>SELECT * FROM users WHERE user='admin' AND pass='1234'</code></p>
+</div>
+
+<div class="card">
+<h3>Injected Query</h3>
+<p><code>' OR '1'='1</code></p>
+<p>✔ Always TRUE → Login Successful</p>
+</div>
+</div>
+</section>
+
+<!-- ATTACK FLOW -->
+<section>
+<h1>Step‑by‑Step <span>Attack Flow</span></h1>
+<div class="flow">
+<div>🧑 Attacker inputs malicious SQL</div>
+<div>🌐 Web app fails to validate input</div>
+<div>🗄️ Database executes attacker query</div>
+<div>📂 Sensitive data exposed</div>
+<div>💥 Data stolen or deleted</div>
+</div>
+</section>
+
+<!-- LIVE SIMULATION -->
+<section>
+<h1>Live <span>SQL Injection Simulation</span></h1>
+<div class="card">
+<p style="text-align:center">Simulated Malicious Queries / Minute</p>
+<div class="counter" id="sqlCounter">3,450</div>
+<div id="sqlBar" style="margin-top:20px">
+  <div id="sqlFill"></div>
+</div>
+</div>
+</section>
+
+<!-- IMPACT -->
+<section>
+<h1>Impact of <span>SQL Injection</span></h1>
+<div class="grid">
+<div class="card">🪪 User credentials leaked</div>
+<div class="card">💳 Financial data theft</div>
+<div class="card">🏥 Healthcare records exposed</div>
+<div class="card">⚖️ Legal penalties & reputation loss</div>
+</div>
+</section>
+
+<!-- INDIA STATS -->
+<section>
+<h1>SQL Injection <span>Trend in India</span></h1>
+<div class="chart-box">
+<canvas id="sqlChart"></canvas>
+</div>
+</section>
+
+<!-- PREVENTION -->
+<section>
+<h1>How Developers <span>Prevent</span> It</h1>
+<div class="grid">
+<div class="card">Use prepared statements</div>
+<div class="card">Input validation & sanitization</div>
+<div class="card">Least privilege database access</div>
+<div class="card">Regular security testing</div>
+</div>
+</section>
+
+<!-- CITIZEN -->
+<section>
+<h1>What <span>You</span> Should Know</h1>
+<div class="grid">
+<div class="card">Avoid entering data on suspicious websites</div>
+<div class="card">Check HTTPS & official domains</div>
+<div class="card">Use strong, unique passwords</div>
+<div class="card">Report data leaks immediately</div>
+</div>
+
+<!-- VOICE AWARENESS -->
+<section>
+<h1>Voice‑Guided <span>SQL Awareness</span></h1>
+
+<div style="text-align:center">
+  <button onclick="playSQLAwareness()">▶ Play Awareness</button>
+  <button onclick="stopSQLAwareness()">⏹ Stop</button>
+</div>
+
+<p class="subtitle" style="margin-top:20px">
+Listen to a simple explanation of SQL Injection for everyone.
+</p>
+</section>
+
+
+
+
+<a href="CyberAwareness.html" class="back">← Back to Awareness</a>
+</section>
+
+<script>
+// LIVE COUNTER
+let sqlCount=3450;
+setInterval(()=>{
+  sqlCount+=Math.floor(Math.random()*60);
+  sqlCounter.innerText=sqlCount.toLocaleString();
+  sqlFill.style.width=Math.floor(Math.random()*90+10)+"%";
+},1200);
+
+// CHART
+new Chart(sqlChart,{
+type:"bar",
+data:{
+labels:["2020","2021","2022","2023","2024"],
+datasets:[{
+label:"SQL Injection Incidents (India)",
+data:[1200,2400,3700,5100,6900],
+backgroundColor:"#22d3ee"
+}]
+},
+options:{
+plugins:{legend:{labels:{color:"#e5e7eb"}}},
+scales:{
+x:{ticks:{color:"#cbd5e1"}},
+y:{ticks:{color:"#cbd5e1"}}
+}
+}
+});
+</script>
+
+<script>
+// SQL VOICE AWARENESS
+let sqlVoice;
+
+function playSQLAwareness(){
+  sqlVoice = new SpeechSynthesisUtterance(
+    "SQL Injection is a cyber attack where hackers insert malicious database commands into website input fields. " +
+    "This allows attackers to bypass logins, steal personal data, and even delete entire databases. " +
+    "Citizens should always use trusted websites, check HTTPS, and report suspicious behavior. " +
+    "Developers can prevent SQL injection using prepared statements and input validation."
+  );
+  sqlVoice.rate = 0.95;
+  sqlVoice.pitch = 1;
+  speechSynthesis.speak(sqlVoice);
+}
+
+function stopSQLAwareness(){
+  speechSynthesis.cancel();
+}
+</script>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Phishing Attacks | Suraksha AI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:#020617;
+  color:#e5e7eb;
+}
+
+section{padding:60px 8%;}
+
+h1{text-align:center;font-size:42px;}
+h1 span{color:#22d3ee;}
+
+.subtitle{
+  text-align:center;
+  max-width:850px;
+  margin:15px auto 50px;
+  color:#94a3b8;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:25px;
+}
+
+.card{
+  background:rgba(15,23,42,.95);
+  padding:25px;
+  border-radius:16px;
+  box-shadow:0 0 25px rgba(34,211,238,.08);
+}
+
+.card img{
+  width:60px;
+  margin-bottom:10px;
+}
+
+.chart-box{
+  background:rgba(255,255,255,.04);
+  padding:25px;
+  border-radius:20px;
+}
+
+.back{
+  display:inline-block;
+  margin-top:40px;
+  color:#38bdf8;
+  text-decoration:none;
+}
+
+button{
+  padding:12px 20px;
+  margin:8px;
+  border:none;
+  border-radius:8px;
+  background:#22d3ee;
+  color:#020617;
+  font-size:16px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- INTRO -->
+<section>
+<h1><span>Phishing</span> Attacks</h1>
+<p class="subtitle">
+Phishing is a cyber attack where criminals trick users into revealing
+passwords, OTPs, bank details, or personal information by pretending to be trusted entities.
+</p>
+</section>
+
+<!-- HOW PHISHING WORKS -->
+<section>
+<h1>How <span>Phishing</span> Works</h1>
+<div class="grid">
+<div class="card">📧 Attacker sends a fake email / SMS / call</div>
+<div class="card">🎭 Pretends to be bank, police, or company</div>
+<div class="card">🔗 Victim clicks link or shares information</div>
+<div class="card">💸 Money or data is stolen instantly</div>
+</div>
+</section>
+
+<!-- TYPES -->
+<section>
+<h1>Types of <span>Phishing</span></h1>
+<div class="grid">
+<div class="card"><h3>Email Phishing</h3><p>Fake emails from banks.</p></div>
+<div class="card"><h3>SMS Phishing</h3><p>Fraud SMS with links.</p></div>
+<div class="card"><h3>Voice Phishing</h3><p>Fake calls from scammers.</p></div>
+<div class="card"><h3>Website Phishing</h3><p>Fake look-alike websites.</p></div>
+<div class="card"><h3>Spear Phishing</h3><p>Targeted employees.</p></div>
+<div class="card"><h3>Whaling</h3><p>Targets top executives.</p></div>
+</div>
+</section>
+
+<!-- STATS -->
+<section>
+<h1>Phishing <span>Statistics (India)</span></h1>
+<div class="grid">
+<div class="chart-box"><canvas id="phishingChart"></canvas></div>
+<div class="chart-box"><canvas id="mediumChart"></canvas></div>
+</div>
+</section>
+
+<!-- VOICE -->
+<section>
+<h1>Voice-Guided <span>Awareness</span></h1>
+<div style="text-align:center">
+<button onclick="playPhishingEN()">▶ Play English Awareness</button>
+<button onclick="stopPhishing()">⏹ Stop</button>
+</div>
+</section>
+
+<a href="CyberAwareness.html" class="back">← Back to Home</a>
+
+<!-- CHARTS -->
+<script>
+new Chart(phishingChart,{
+  type:"bar",
+  data:{
+    labels:["Email","SMS","Call","Fake Website","Social Media"],
+    datasets:[
+      {label:"Current",data:[38,26,18,12,6],backgroundColor:"#22d3ee"},
+      {label:"2025",data:[40,28,17,10,5],backgroundColor:"rgba(34,211,238,.6)"},
+      {label:"2026",data:[42,30,15,8,5],backgroundColor:"rgba(34,211,238,.3)"}
+    ]
+  },
+  options:{plugins:{legend:{labels:{color:"#e5e7eb"}}}}
+});
+
+new Chart(mediumChart,{
+  type:"pie",
+  data:{
+    labels:["Banking","UPI","E-commerce","Government"],
+    datasets:[{
+      data:[45,30,15,10],
+      backgroundColor:["#ef4444","#facc15","#22c55e","#38bdf8"]
+    }]
+  },
+  options:{
+    plugins:{
+      legend:{labels:{color:"#e5e7eb"}},
+      tooltip:{
+        callbacks:{
+          label:function(context){
+            const value=context.raw;
+            const total=context.dataset.data.reduce((a,b)=>a+b,0);
+            const percent=((value/total)*100).toFixed(1);
+            return `${context.label}: ${percent}%`;
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+
+<!-- VOICE SCRIPT (ENGLISH ONLY) -->
+<script>
+function playPhishingEN(){
+  speechSynthesis.cancel();
+
+  const utterance=new SpeechSynthesisUtterance(
+    "Phishing is a cyber crime where attackers trick users into sharing passwords, OTPs, or bank details. " +
+    "Never click unknown links. Never share OTP or CVV. Report fraud on cybercrime dot gov dot in."
+  );
+
+  utterance.lang="en-IN";
+  utterance.rate=0.95;
+
+  speechSynthesis.speak(utterance);
+}
+
+function stopPhishing(){
+  speechSynthesis.cancel();
+}
+</script>
+
+</body>
+</html>

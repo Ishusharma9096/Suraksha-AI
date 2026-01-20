@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Zero‑Day Exploit | Suraksha AI</title>
+
+<style>
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#020617,#000);
+  color:#e5e7eb;
+  font-family:'Segoe UI',sans-serif;
+}
+
+section{padding:70px 8%}
+
+h1{text-align:center;font-size:44px}
+h1 span{color:#22d3ee}
+
+.subtitle{
+  text-align:center;
+  color:#94a3b8;
+  max-width:900px;
+  margin:20px auto 60px;
+  font-size:18px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:28px;
+}
+
+.card{
+  background:linear-gradient(145deg,#020617,#0f172a);
+  padding:28px;
+  border-radius:20px;
+  box-shadow:0 0 30px rgba(34,211,238,.12);
+}
+
+.flow{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:20px;
+}
+
+.flow div{
+  background:rgba(255,255,255,.06);
+  padding:20px;
+  border-radius:16px;
+  width:210px;
+  text-align:center;
+  border:1px solid rgba(34,211,238,.25);
+}
+
+button{
+  padding:12px 24px;
+  background:#22d3ee;
+  border:none;
+  border-radius:25px;
+  font-size:16px;
+  cursor:pointer;
+  margin:10px;
+}
+
+.back{
+  display:inline-block;
+  margin-top:50px;
+  color:#38bdf8;
+  text-decoration:none;
+  font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<section>
+<h1><span>Zero‑Day</span> Exploit</h1>
+<p class="subtitle">
+A Zero‑Day exploit targets a hidden software weakness that developers do not yet know about —
+making it one of the most dangerous cyber attacks in the world.
+</p>
+</section>
+
+<!-- SIMPLE EXPLANATION -->
+<section>
+<h1>Zero‑Day in <span>Simple Words</span></h1>
+
+<div class="grid">
+<div class="card">🕳️ A hidden software bug exists</div>
+<div class="card">⏱️ No fix is available yet</div>
+<div class="card">💀 Hackers attack before anyone can stop it</div>
+</div>
+</section>
+
+<!-- WHY DANGEROUS -->
+<section>
+<h1>Why <span>Zero‑Day</span> Is Extremely Dangerous</h1>
+
+<div class="grid">
+<div class="card">No antivirus can detect it immediately</div>
+<div class="card">Used in cyber warfare & spying</div>
+<div class="card">Can compromise millions of systems silently</div>
+</div>
+</section>
+
+<!-- ATTACK FLOW -->
+<section>
+<h1>How a <span>Zero‑Day</span> Attack Happens</h1>
+
+<div class="flow">
+<div>🔍 Vulnerability Discovered</div>
+<div>🧪 Tested by Hacker</div>
+<div>🚀 Exploit Launched</div>
+<div>🕵️ Data Stolen / Control Gained</div>
+<div>🛑 Patch Released Later</div>
+</div>
+</section>
+
+<!-- TARGETS -->
+<section>
+<h1>Common <span>Targets</span></h1>
+
+<div class="grid">
+<div class="card">Operating Systems</div>
+<div class="card">Web Browsers</div>
+<div class="card">Banking & Enterprise Software</div>
+</div>
+</section>
+
+<!-- DEFENSE -->
+<section>
+<h1>How Organizations <span>Defend</span></h1>
+
+<div class="grid">
+<div class="card">Behavior‑based detection</div>
+<div class="card">AI‑driven threat intelligence</div>
+<div class="card">Rapid patch management</div>
+</div>
+</section>
+
+<!-- CITIZEN -->
+<section>
+<h1>What <span>You</span> Should Do</h1>
+
+<div class="grid">
+<div class="card">Update your software regularly</div>
+<div class="card">Avoid unknown downloads & links</div>
+<div class="card">Report unusual system behavior</div>
+</div>
+</section>
+
+<!-- VOICE AWARENESS -->
+<section>
+<h1>Voice‑Guided <span>Awareness</span></h1>
+
+<div style="text-align:center">
+<button onclick="playZeroDayAwareness()">▶ Play Awareness</button>
+<button onclick="stopZeroDayAwareness()">⏹ Stop</button>
+</div>
+
+<p class="subtitle">
+This audio explains Zero‑Day attacks in simple language for everyone.
+</p>
+</section>
+
+<a href="CyberAwareness.html" class="back">← Back to Awareness</a>
+
+<script>
+let zeroDayVoice;
+
+function playZeroDayAwareness(){
+  zeroDayVoice = new SpeechSynthesisUtterance(
+    "A Zero Day attack happens when hackers exploit a software weakness before developers know it exists. " +
+    "Because no fix is available, these attacks are very dangerous. " +
+    "They are often used for spying, stealing data, or cyber warfare. " +
+    "Citizens should always update their software and avoid suspicious downloads."
+  );
+  zeroDayVoice.rate = 0.95;
+  zeroDayVoice.pitch = 1;
+  speechSynthesis.speak(zeroDayVoice);
+}
+
+function stopZeroDayAwareness(){
+  speechSynthesis.cancel();
+}
+</script>
+
+</body>
+</html>

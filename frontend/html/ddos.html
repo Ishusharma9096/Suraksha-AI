@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DDoS Attack Explained | Suraksha AI</title>
+
+<!-- Chart & Map -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#020617,#000);
+  color:#e5e7eb;
+  font-family:'Segoe UI',sans-serif;
+}
+
+section{padding:70px 8%}
+h1{text-align:center;font-size:44px}
+h1 span{color:#22d3ee}
+.subtitle{text-align:center;color:#94a3b8;max-width:950px;margin:20px auto 60px;font-size:18px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px}
+.card{background:linear-gradient(145deg,#020617,#0f172a);padding:28px;border-radius:20px;box-shadow:0 0 35px rgba(34,211,238,.12)}
+
+#trafficBar{height:22px;background:#020617;border-radius:20px;overflow:hidden}
+#trafficFill{height:100%;width:10%;background:linear-gradient(90deg,#22d3ee,#ef4444);transition:.5s}
+
+.counter{font-size:42px;color:#22d3ee;text-align:center}
+
+#map{height:420px;border-radius:20px;box-shadow:0 0 30px rgba(34,211,238,.3)}
+
+button{
+  padding:14px 24px;
+  background:#22d3ee;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.back{display:inline-block;margin-top:50px;color:#38bdf8;text-decoration:none;font-size:18px}
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<section>
+<h1><span>DDoS</span> Attack</h1>
+<p class="subtitle">
+A Distributed Denial of Service (DDoS) attack floods servers with massive fake traffic,
+causing websites, banking apps, and government portals to stop responding.
+</p>
+</section>
+
+<!-- LIVE COUNTER -->
+<section>
+<h1>Live <span>DDoS Simulation</span></h1>
+<div class="card">
+<p style="text-align:center">Simulated Attack Requests / Second</p>
+<div class="counter" id="ddosCounter">12,450</div>
+</div>
+</section>
+
+<!-- TRAFFIC BAR -->
+<section>
+<h1>Attack <span>Traffic Intensity</span></h1>
+<div class="card">
+<div id="trafficBar">
+  <div id="trafficFill"></div>
+</div>
+<p style="margin-top:15px;color:#94a3b8">Traffic spikes during active DDoS attack</p>
+</div>
+</section>
+
+<!-- ATTACK FLOW -->
+<section>
+<h1>How a <span>DDoS</span> Attack Works</h1>
+<div class="grid">
+<div class="card">🎮 Attacker controls botnet</div>
+<div class="card">📱 Thousands of infected devices</div>
+<div class="card">🚀 Traffic fired simultaneously</div>
+<div class="card">🔥 Server resources exhausted</div>
+<div class="card">❌ Website goes offline</div>
+</div>
+</section>
+
+<!-- INDIA MAP -->
+<section>
+<h1>India <span>DDoS Attack Map</span></h1>
+<p class="subtitle">Live simulated targets across India</p>
+<div id="map"></div>
+</section>
+
+<!-- CHART -->
+<section>
+<h1>DDoS <span>Trend in India</span></h1>
+<canvas id="ddosChart"></canvas>
+</section>
+
+<!-- CITIZEN AWARENESS -->
+<section>
+<h1>What <span>You</span> Should Do</h1>
+<div class="grid">
+<div class="card">Do not panic if websites are temporarily down</div>
+<div class="card">Avoid spreading fake outage rumors</div>
+<div class="card">Follow official government updates</div>
+<div class="card">Report suspicious network behavior</div>
+</div>
+</section>
+
+<!-- VOICE MODE -->
+<section>
+<h1>Voice‑Guided <span>Awareness</span></h1>
+<div style="text-align:center">
+<button onclick="speak()">▶ Play Awareness</button>
+<button onclick="stopSpeak()">⏹ Stop</button>
+</div>
+</section>
+
+<a href="CyberAwareness.html" class="back">← Back to Awareness</a>
+
+<!-- JS -->
+<script>
+// LIVE COUNTER
+let count=12450;
+setInterval(()=>{
+  count+=Math.floor(Math.random()*120);
+  ddosCounter.innerText=count.toLocaleString();
+},1000);
+
+// TRAFFIC BAR
+setInterval(()=>{
+  trafficFill.style.width=Math.floor(Math.random()*90+10)+"%";
+},1200);
+
+// CHART
+new Chart(ddosChart,{
+type:"line",
+data:{
+labels:["2020","2021","2022","2023","2024"],
+datasets:[{
+label:"DDoS Attacks in India",
+data:[1000,2100,3900,6100,9000],
+borderColor:"#22d3ee",
+fill:true,
+backgroundColor:"rgba(34,211,238,.25)"
+}]
+}
+});
+
+// MAP
+const map=L.map('map').setView([22.97,78.65],5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+const cities=[[28.6,77.2,"Delhi"],[19,72.8,"Mumbai"],[13,77.6,"Bengaluru"]];
+setInterval(()=>{
+  const c=cities[Math.floor(Math.random()*cities.length)];
+  const m=L.circleMarker([c[0],c[1]],{
+    radius:10,color:"#ef4444",fillColor:"#ef4444",fillOpacity:.8
+  }).addTo(map).bindPopup(`DDoS Target: ${c[2]}`);
+  setTimeout(()=>map.removeLayer(m),6000);
+},1200);
+
+// VOICE
+let msg;
+function speak(){
+  msg=new SpeechSynthesisUtterance(
+    "A DDoS attack floods websites with massive fake traffic. If services go down, stay calm and rely on official information."
+  );
+  speechSynthesis.speak(msg);
+}
+function stopSpeak(){
+  speechSynthesis.cancel();
+}
+</script>
+
+</body>
+</html>
